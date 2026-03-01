@@ -1,0 +1,11 @@
+{
+  "itemGroup.djcraft": "Example Mod Tab",
+  "block.djcraft.example_block": "Example Block",
+  "item.djcraft.example_item": "Example Item",
+  "djcraft.configuration.title": "DJCraft Configs",
+  "djcraft.configuration.section.djcraft.common.toml": "DJCraft Configs",
+  "djcraft.configuration.section.djcraft.common.toml.title": "DJCraft Configs",
+  "djcraft.configuration.items": "Item List",
+  "tooltip.djcraft.beat_cooldown": "DJ Cooldown: %s beats",
+  "tooltip.djcraft.switch_warmup": "Switch Warmup: %s beats"
+}
