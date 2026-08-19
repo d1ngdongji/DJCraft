@@ -1,0 +1,46 @@
+{
+  "events": {
+    "melee_strike": [
+      { "sounds": [{ "event": "minecraft:entity.player.attack.strong" }], "pitch": [0.97, 1.03] }
+    ],
+    "melee_thrust": [
+      { "sounds": [{ "event": "minecraft:entity.player.attack.knockback" }], "pitch": [0.97, 1.03] }
+    ],
+    "melee_sweep": [
+      { "sounds": [{ "event": "minecraft:entity.player.attack.sweep" }], "pitch": [0.97, 1.03] }
+    ],
+    "melee_critical": [
+      { "sounds": [{ "event": "minecraft:entity.player.attack.crit" }], "pitch": [0.97, 1.03] }
+    ],
+    "trigger_impact": [
+      { "when": { "beat": "hit" }, "sounds": [{ "event": "minecraft:item.crossbow.shoot" }], "pitch": [0.98, 1.02] }
+    ],
+    "charge_start": [
+      { "sounds": [{ "event": "minecraft:item.crossbow.loading_start" }], "pitch": [0.98, 1.02] }
+    ],
+    "charge_release": [
+      { "sounds": [{ "event": "minecraft:entity.arrow.shoot" }], "pitch": [0.98, 1.02] }
+    ],
+    "equip_start": [
+      { "sounds": [{ "event": "minecraft:item.armor.equip_generic" }], "volume": 0.7, "pitch": [0.98, 1.02] }
+    ],
+    "reload_start": [
+      { "sounds": [{ "event": "minecraft:item.crossbow.loading_middle" }], "pitch": [0.98, 1.02] }
+    ],
+    "ready": [
+      { "sounds": [{ "event": "minecraft:item.crossbow.loading_end" }], "pitch": [0.98, 1.02] }
+    ],
+    "dash": [
+      { "sounds": [{ "event": "djcraft:ability.dash" }], "volume": 1.0, "pitch": 1.0 }
+    ],
+    "double_jump": [
+      { "sounds": [{ "event": "djcraft:ability.double_jump" }], "volume": 1.0, "pitch": 1.0 }
+    ],
+    "parry": [
+      { "when": { "beat": "hit", "target": "hit" }, "sounds": [{ "event": "djcraft:combat.parry" }], "volume": 1.0, "pitch": 1.0 }
+    ],
+    "target_hit": [
+      { "when": { "target": "hit" }, "sounds": [{ "event": "minecraft:entity.arrow.hit_player" }], "pitch": [0.98, 1.02] }
+    ]
+  }
+}

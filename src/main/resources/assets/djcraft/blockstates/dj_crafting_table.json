@@ -1,0 +1,7 @@
+{
+    "variants": {
+        "": {
+            "model": "djcraft:block/dj_crafting_table"
+        }
+    }
+}

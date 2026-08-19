@@ -1,0 +1,174 @@
+{
+  "itemGroup.djcraft": "DJCraft",
+  "attribute.djcraft.max_energy": "Max Energy",
+  "key.category.djcraft.general": "DJCraft",
+  "key.djcraft.open_jukebox": "Open DJ Player",
+  "key.djcraft.dash": "DJ Dash",
+  "block.djcraft.example_block": "Example Block",
+  "item.djcraft.example_item": "Example Item",
+  "djcraft.configuration.title": "DJCraft Configs",
+  "djcraft.configuration.section.djcraft.common.toml": "DJCraft Configs",
+  "djcraft.configuration.section.djcraft.common.toml.title": "DJCraft Configs",
+  "djcraft.configuration.section.djcraft.client.toml": "DJCraft Client Visuals",
+  "djcraft.configuration.section.djcraft.client.toml.title": "DJCraft Client Visuals",
+  "djcraft.configuration.beatPresentationMode": "Beat Presentation",
+  "djcraft.configuration.beatPresentationMode.tooltip": "Choose the new falling chart or the original legacy presentation.",
+  "djcraft.configuration.beatPresentationMode.falling": "Falling",
+  "djcraft.configuration.beatPresentationMode.legacy": "Legacy",
+  "djcraft.configuration.fallingJudgeLineYPercent": "Falling Judgment Line Height",
+  "djcraft.configuration.fallingJudgeLineYPercent.tooltip": "Vertical position as a percentage of the scaled GUI height.",
+  "djcraft.configuration.items": "Item List",
+  "tooltip.djcraft.beat_cooldown": "DJ Cooldown: %s beats",
+  "tooltip.djcraft.switch_warmup": "Switch Warmup: %s beats",
+  "tooltip.djcraft.flowery_dash": "While in the off hand or hotbar, dash changes to %s",
+  "tooltip.djcraft.attack_energy_cost": "Attack Energy Cost: %s",
+  "tooltip.djcraft.use_energy_cost": "Use Energy Cost: %s",
+  "tooltip.djcraft.item_tag.swift": "DJCraft Tag: Swift",
+  "tooltip.djcraft.item_tag.smash": "DJCraft Tag: Smash",
+  "tooltip.djcraft.dj_crafting_table_usage": "Right-click while holding an empty disc",
+  "tooltip.djcraft.portable_jukebox_usage": "Sneak + right-click to insert discs",
+  "tooltip.djcraft.disc_max_combo": "Max Combo: %s",
+  "tooltip.djcraft.disc_play_time": "Total Play Time: %s",
+  "item.djcraft.empty_disc": "Empty Disc",
+  "item.djcraft.djfumo": "DJ Fumo",
+  "item.djcraft.flowery": "Flowery",
+  "item.djcraft.note_in_a_bottle": "Note in a Bottle",
+  "tooltip.djcraft.note_in_a_bottle": "In the hotbar or offhand: +1 air jump",
+  "item.djcraft.band_of_energy": "Band of Energy",
+  "item.djcraft.laser_crossbow": "Laser Crossbow",
+  "item.djcraft.magic_crossbow": "Magic Crossbow",
+  "item.djcraft.explosive_bow": "Explosive Bow",
+  "effect.djcraft.rend": "Rend",
+  "enchantment.djcraft.aerial_step": "Aerial Step",
+  "enchantment.djcraft.rending": "Rending",
+  "enchantment.djcraft.ray_overcharge": "Ray Overcharge",
+  "tooltip.djcraft.band_of_energy": "In the hotbar or offhand: +%s max energy",
+  "block.djcraft.dj_crafting_table": "DJ Crafting Table",
+  "message.djcraft.crafting_table_need_disc": "You need an empty disc",
+  "message.djcraft.crafting_invalid": "The DJ crafting request is no longer valid",
+  "message.djcraft.crafting_success": "Wrote track %s to the disc",
+  "message.djcraft.play_not_available": "Track %s is not available in one of your portable jukeboxes",
+  "message.djcraft.clock_desync": "DJ session stopped because the playback clock repeatedly lost synchronization",
+  "message.djcraft.audio_unavailable": "DJ session stopped because audio playback became unavailable",
+  "message.djcraft.download_success": "Downloaded TrackPack: %s",
+  "message.djcraft.download_failed": "TrackPack download failed: %s",
+  "message.djcraft.download_failure.not_found": "pack not found",
+  "message.djcraft.download_failure.too_large": "pack exceeds the configured size limit",
+  "message.djcraft.download_failure.busy": "another transfer is already active",
+  "message.djcraft.download_failure.invalid": "invalid transfer data",
+  "message.djcraft.download_failure.io_error": "file read or write error",
+  "message.djcraft.download_failure.timeout": "transfer timed out",
+  "message.djcraft.download_failure.hash_mismatch": "archive hash mismatch",
+  "message.djcraft.download_failure.canceled": "transfer canceled",
+  "message.djcraft.download_failure.reload_failed": "downloaded pack could not be loaded",
+  "ui.djcraft.player.title": "DJCraft Player",
+  "ui.djcraft.crafting.title": "DJ Crafting Table",
+  "ui.djcraft.crafting.subtitle": "Choose a track to write to the blank disc in your hand",
+  "ui.djcraft.crafting.empty": "Install or download a TrackPack before writing a disc",
+  "ui.djcraft.empty.title": "No tracks available",
+  "ui.djcraft.player.empty": "This portable jukebox has no playable discs",
+  "ui.djcraft.play": "Play",
+  "ui.djcraft.stop": "Stop",
+  "ui.djcraft.close": "Close",
+  "ui.djcraft.previous": "Previous track",
+  "ui.djcraft.next": "Next track",
+  "ui.djcraft.unknown_author": "Unknown artist",
+  "ui.djcraft.track_count": "%s tracks",
+  "ui.djcraft.track_meta": "%s  |  BPM %s  |  %s beats",
+  "ui.djcraft.player.meta": "BPM %s  |  %s combat beats",
+  "ui.djcraft.player.statistics": "Max Combo %s  |  Played %s",
+  "ui.djcraft.position": "%s / %s",
+  "ui.djcraft.mode.sequential": "Sequence",
+  "ui.djcraft.mode.repeat_one": "Repeat One",
+  "ui.djcraft.mode.shuffle": "Shuffle",
+  "item.djcraft.portable_jukebox": "MP3",
+  "container.djcraft.portable_jukebox": "MP3 Storage",
+  "ui.djcraft.trackpacks.open": "Open packs folder",
+  "ui.djcraft.trackpacks.reload": "Reload packs",
+  "message.djcraft.trackpacks.open_failed": "Could not open the TrackPacks folder",
+  "message.djcraft.trackpacks.reload_failed": "TrackPacks were reloaded, but resources could not be refreshed",
+  "message.djcraft.trackpacks.reloaded": "Reloaded %s local TrackPack(s)",
+  "ui.djcraft.group.title": "DJ Network",
+  "ui.djcraft.group.create": "Create from this jukebox",
+  "ui.djcraft.group.accept": "Accept invitation",
+  "ui.djcraft.group.decline": "Decline invitation",
+  "ui.djcraft.group.invitation": "Invitation from %s",
+  "ui.djcraft.group.owner": "Owner: %s",
+  "ui.djcraft.group.members": "Members: %s",
+  "ui.djcraft.group.pending": "Preparing: %s",
+  "ui.djcraft.group.current": "Playing: %s",
+  "ui.djcraft.group.invite_players": "Invite online players",
+  "ui.djcraft.group.stop": "Stop group playback",
+  "ui.djcraft.group.leave": "Leave network",
+  "ui.djcraft.group.disband": "Disband network",
+  "ui.djcraft.group.retry": "Retry downloads",
+  "message.djcraft.group.already_member": "You already belong to a DJ network",
+  "message.djcraft.group.empty_jukebox": "The selected portable jukebox has no playable discs",
+  "message.djcraft.group.owner_only": "Only the DJ network owner can do that",
+  "message.djcraft.group.target_busy": "That player already belongs to a DJ network",
+  "message.djcraft.group.invited": "%s invited you to a DJ network",
+  "message.djcraft.group.invite_sent": "Invited %s to your DJ network",
+  "message.djcraft.group.invite_missing": "That DJ network invitation is no longer valid",
+  "message.djcraft.group.invalid_track": "That track is not in this DJ network playlist",
+  "message.djcraft.group.invalid_mode": "Unknown DJ network playback mode",
+  "message.djcraft.group.owner_transferred": "You are now the DJ network owner",
+  "message.djcraft.group.not_member": "You do not belong to a DJ network",
+  "message.djcraft.group.status": "Owner: %s | members: %s | preparing: %s | mode: %s | track: %s",
+  "message.djcraft.group.audio_recovering": "Group audio became unavailable; requesting a synchronized retry",
+  "message.djcraft.group.audio_retry": "Retrying group audio (%s/%s)",
+  "message.djcraft.group.audio_quarantined": "Audio could not recover; DJ combat is disabled until the next track",
+  "ui.djcraft.download.title": "Downloads",
+  "ui.djcraft.download.idle": "No active download",
+  "ui.djcraft.download.pause": "Pause",
+  "ui.djcraft.download.resume": "Resume",
+  "ui.djcraft.download.progress": "%s — %s%% (%s / %s) — %s",
+  "ui.djcraft.download.no_server_packs": "The server has not advertised any TrackPacks",
+  "ui.djcraft.download.verified": "Verified and ready",
+  "ui.djcraft.download.mismatch": "Local content hash differs",
+  "ui.djcraft.download.missing": "Not installed",
+  "ui.djcraft.download.action": "Download",
+  "ui.djcraft.download.redownload": "Download again",
+  "ui.djcraft.download.retry": "Retry",
+  "message.djcraft.play_unverified": "TrackPack %s is not verified against this server",
+  "message.djcraft.admin_play_checking": "Checking %s for TrackPack %s; download will start automatically if needed",
+  "message.djcraft.admin_play_downloading": "The server requested TrackPack %s; downloading before playback",
+  "message.djcraft.admin_play_failed": "Could not start %s on TrackPack %s: %s",
+  "message.djcraft.admin_play_started": "Started TrackPack %s for %s after client verification",
+  "message.djcraft.admin_play_accepted": "Accepted playback request for TrackPack %s; waiting for client verification if needed",
+  "message.djcraft.admin_play_accepted_many": "Accepted TrackPack %s playback request for %s player(s)"
+  ,"ui.djcraft.cyber_grind.title": "Cyber Grind"
+  ,"ui.djcraft.cyber_grind.back": "Back to crafting"
+  ,"ui.djcraft.cyber_grind.start": "Prepare run"
+  ,"ui.djcraft.cyber_grind.jukebox": "Jukebox slot %s"
+  ,"ui.djcraft.cyber_grind.no_jukebox": "No playable jukebox"
+  ,"ui.djcraft.cyber_grind.no_presets": "The server has no valid Cyber Grind presets"
+  ,"ui.djcraft.cyber_grind.ready_title": "Ready for %s?"
+  ,"ui.djcraft.cyber_grind.ready_members": "Players: %s"
+  ,"ui.djcraft.cyber_grind.accept": "Ready"
+  ,"ui.djcraft.cyber_grind.decline": "Decline"
+  ,"ui.djcraft.cyber_grind.exit": "Exit Grind"
+  ,"ui.djcraft.cyber_grind.exit_confirm": "End your current Cyber Grind run?"
+  ,"ui.djcraft.cyber_grind.cancel": "Keep fighting"
+  ,"hud.djcraft.cyber_grind.countdown": "CYBER GRIND - %ss"
+  ,"hud.djcraft.cyber_grind.wave": "WAVE %s - WEIGHT %s / %s"
+  ,"hud.djcraft.cyber_grind.completed": "Completed: %s"
+  ,"message.djcraft.cyber_grind.invalid_table": "The DJ workbench is no longer available"
+  ,"message.djcraft.cyber_grind.invalid_profile": "That Cyber Grind preset is unavailable"
+  ,"message.djcraft.cyber_grind.invalid_playlist": "Select a valid portable jukebox playlist"
+  ,"message.djcraft.cyber_grind.player_busy": "A selected player is already preparing or fighting a Cyber Grind run"
+  ,"message.djcraft.cyber_grind.member_unavailable": "Every network member must be online and alive"
+  ,"message.djcraft.cyber_grind.prepare_failed": "Cyber Grind preparation failed: %s"
+  ,"message.djcraft.cyber_grind.prepare_timeout": "Cyber Grind preparation timed out"
+  ,"message.djcraft.cyber_grind.member_left": "Cyber Grind preparation was cancelled because a member left"
+  ,"message.djcraft.cyber_grind.server_stopped": "Cyber Grind preparation was cancelled because the server stopped"
+  ,"message.djcraft.cyber_grind.dimension_missing": "The Cyber Grind dimension is unavailable"
+  ,"message.djcraft.cyber_grind.playback_locked": "The Cyber Grind playlist is server-controlled during this run"
+  ,"message.djcraft.cyber_grind.result": "Cyber Grind complete - waves: %s, personal best: %s, group best: %s"
+  ,"message.djcraft.cyber_grind.audio_retry": "Retrying Cyber Grind audio (%s/%s)"
+  ,"gamerule.djcraftOffBeatAttackDamagePercent": "DJCraft Off-Beat Attack Damage Percent"
+  ,"gamerule.djcraftOffBeatAttackDamagePercent.description": "Percent of normal final damage dealt by valid off-beat attacks (0 cancels them)"
+  ,"gamerule.djcraftBaseMaxToleranceChances": "DJCraft Base Maximum Tolerance Chances"
+  ,"gamerule.djcraftBaseMaxToleranceChances.description": "Base number of stored combo-protection chances during DJ mode"
+  ,"gamerule.djcraftIdleAttackableBeatsBeforeComboReset": "DJCraft Idle Attackable Beats Before Combo Reset"
+  ,"gamerule.djcraftIdleAttackableBeatsBeforeComboReset.description": "Attackable beats without an on-beat hit before the current combo resets"
+}

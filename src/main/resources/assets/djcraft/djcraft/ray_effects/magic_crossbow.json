@@ -1,0 +1,17 @@
+{
+  "core_color": "#FF5CC838",
+  "halo_color": "#FF2A9EE0",
+  "core_width": 0.008,
+  "halo_width": 0.025,
+  "beam_lifetime_ms": 90,
+  "burst_lifetime_ms": 420,
+  "burst_start_radius": 0.18,
+  "burst_end_radius": 1.25,
+  "pulse_speed": 12.0,
+  "muzzle_burst_scale": 0.18,
+  "contact_burst_scale": 1.0,
+  "end_burst_scale": 0.12,
+  "first_person_main_muzzle": [0.0, -0.18, 0.45],
+  "first_person_offhand_muzzle": [-0.22, -0.18, 0.45],
+  "third_person_muzzle": [0.28, -0.35, 0.35]
+}

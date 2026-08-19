@@ -1,0 +1,34 @@
+{
+  "priority": 0,
+  "animations": {
+    "idle": {
+      "clip": "animation.djcraft.first_person.idle",
+      "duration_beats": 1.0
+    },
+    "equip_start": {
+      "clip": "animation.djcraft.first_person.equip"
+    },
+    "unequip_start": {
+      "clip": "animation.djcraft.first_person.unequip"
+    },
+    "melee_strike": {
+      "clip": "animation.djcraft.first_person.melee_strike"
+    },
+    "melee_thrust": {
+      "clip": "animation.djcraft.first_person.melee_thrust"
+    },
+    "melee_sweep": {
+      "clip": "animation.djcraft.first_person.melee_sweep"
+    },
+    "melee_critical": {
+      "clip": "animation.djcraft.first_person.melee_critical"
+    },
+    "use": {
+      "clip": "animation.djcraft.first_person.use",
+      "duration_beats": 1.0
+    },
+    "parry": {
+      "clip": "animation.djcraft.first_person.parry"
+    }
+  }
+}

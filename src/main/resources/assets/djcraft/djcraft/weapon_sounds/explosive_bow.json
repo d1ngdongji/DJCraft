@@ -1,0 +1,11 @@
+{
+  "fallback": "djcraft:generic",
+  "events": {
+    "charge_start": [
+      { "when": { "beat": "hit" }, "sounds": [{ "event": "djcraft:weapon.explosive_bow_charge" }] }
+    ],
+    "trigger_impact": [
+      { "when": { "beat": "hit" }, "sounds": [{ "event": "djcraft:weapon.explosive_bow_shoot" }] }
+    ]
+  }
+}

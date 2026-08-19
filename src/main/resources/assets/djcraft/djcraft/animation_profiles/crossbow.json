@@ -1,0 +1,14 @@
+{
+  "priority": 100,
+  "selectors": {
+    "behaviors": [
+      "djcraft:crossbow"
+    ]
+  },
+  "animations": {
+    "trigger_impact": {
+      "clip": "animation.djcraft.first_person.crossbow_fire",
+      "duration_beats": 1.0
+    }
+  }
+}

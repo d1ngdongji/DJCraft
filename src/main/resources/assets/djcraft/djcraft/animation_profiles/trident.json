@@ -1,0 +1,14 @@
+{
+  "priority": 100,
+  "selectors": {
+    "items": [
+      "minecraft:trident"
+    ]
+  },
+  "animations": {
+    "melee_thrust": {
+      "clip": "animation.djcraft.first_person.trident_thrust",
+      "duration_beats": 2.0
+    }
+  }
+}

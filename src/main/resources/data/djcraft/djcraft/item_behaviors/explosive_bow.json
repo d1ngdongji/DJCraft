@@ -1,0 +1,6 @@
+{
+  "selectors": {
+    "items": ["djcraft:explosive_bow"]
+  },
+  "behavior": "djcraft:trigger"
+}

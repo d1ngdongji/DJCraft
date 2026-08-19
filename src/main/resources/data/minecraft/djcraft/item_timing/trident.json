@@ -1,0 +1,6 @@
+{
+  "beat_cooldown": 2,
+  "switch_warmup": 1,
+  "attack_energy_cost": 5.0,
+  "use_energy_cost": 10.0
+}

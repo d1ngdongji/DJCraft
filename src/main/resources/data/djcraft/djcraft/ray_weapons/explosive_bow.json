@@ -1,0 +1,16 @@
+{
+  "range": 96.0,
+  "base_damage": 0.0,
+  "pierce_entities": false,
+  "effect": "djcraft:explosive_bow",
+  "horizontal_aim_assist_percent": 7.0,
+  "vertical_aim_assist_percent": 7.0,
+  "auto_charge_beats": 1,
+  "explosion": {
+    "radius": 5.0,
+    "damage": 18.0,
+    "airborne_radius": 8.0,
+    "airborne_damage": 36.0,
+    "explode_at_max_range": true
+  }
+}

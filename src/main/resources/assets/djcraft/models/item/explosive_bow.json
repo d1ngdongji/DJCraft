@@ -1,0 +1,12 @@
+{
+  "parent": "djcraft:item/explosive_bow_base",
+  "textures": { "layer0": "djcraft:item/explosive_bow_stage0" },
+  "overrides": [
+    { "predicate": { "pulling": 1.0 }, "model": "djcraft:item/explosive_bow_stage1" },
+    { "predicate": { "pulling": 1.0, "pull": 0.65 }, "model": "djcraft:item/explosive_bow_stage2" },
+    { "predicate": { "pulling": 1.0, "pull": 0.9 }, "model": "djcraft:item/explosive_bow_stage3" },
+    { "predicate": { "djcraft:auto_charge": 0.25 }, "model": "djcraft:item/explosive_bow_stage1" },
+    { "predicate": { "djcraft:auto_charge": 0.5 }, "model": "djcraft:item/explosive_bow_stage2" },
+    { "predicate": { "djcraft:auto_charge": 0.75 }, "model": "djcraft:item/explosive_bow_stage3" }
+  ]
+}

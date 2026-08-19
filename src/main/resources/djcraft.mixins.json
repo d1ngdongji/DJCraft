@@ -1,0 +1,40 @@
+{
+  "required": true,
+  "package": "otto.djgun.djcraft.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AbstractArrowAccessMixin",
+    "EntityThrownTridentAttackMixin",
+    "MaceItemCommonMixin",
+    "ItemStackAreaDurabilityMixin",
+    "LivingEntityAttackStrengthMixin",
+    "LivingEntityEquipmentAccessMixin",
+    "PlayerAttackContextMixin",
+    "ServerGamePacketListenerSelectionMixin",
+    "ThrownTridentMixin",
+    "TridentItemCommonMixin",
+    "LivingEntityMixin",
+    "PlayerDJGroundJumpMixin",
+    "PlayerDashTravelMixin"
+  ],
+  "client": [
+    "ChannelMixin",
+    "SoundEngineMixin",
+    "BlockEntityWithoutLevelRendererMixin",
+    "CrossbowItemMixin",
+    "BowItemMixin",
+    "TridentItemMixin",
+    "MultiPlayerGameModeMixin",
+    "ItemInHandRendererMixin",
+    "ItemRendererMixin",
+    "LivingEntityClientMixin",
+    "PlayerDJGroundJumpClientMixin",
+    "PlayerDashTravelClientMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "priority": 200,
+  "selectors": {
+    "items": ["djcraft:explosive_bow"]
+  },
+  "animations": {
+    "charge_start": {
+      "clip": "animation.djcraft.first_person.explosive_bow_charge",
+      "duration_beats": 1.0
+    },
+    "trigger_impact": {
+      "clip": "animation.djcraft.first_person.crossbow_fire",
+      "duration_beats": 1.0
+    }
+  }
+}

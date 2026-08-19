@@ -1,0 +1,10 @@
+{
+  "selectors": {
+    "items": ["minecraft:mace"]
+  },
+  "behavior": "djcraft:mace",
+  "melee": {
+    "cylinder_length": 2.0,
+    "radius": 2.0
+  }
+}

@@ -1,0 +1,38 @@
+# eclipse
+.eclipse/
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle
+
+# other
+.agents/
+eclipse
+run
+runs
+run-data
+.kiro
+.vscode
+.codex/
+libs
+
+repo
+DJCraft模组策划.md
+Docs-links.md
+AGENTS.md
+steering
+logs
+scripts

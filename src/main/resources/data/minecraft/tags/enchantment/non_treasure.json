@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "djcraft:aerial_step",
+    "djcraft:rending",
+    "djcraft:ray_overcharge"
+  ]
+}

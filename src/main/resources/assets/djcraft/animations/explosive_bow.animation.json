@@ -1,0 +1,27 @@
+{
+  "format_version": "1.8.0",
+  "djcraft_space": "hand_reference_generated_1_21_1",
+  "animations": {
+    "animation.djcraft.first_person.explosive_bow_charge": {
+      "animation_length": 1.0,
+      "bones": {
+        "first_person_hand": {
+          "position": {
+            "0.0": { "vector": [0.0, 0.0, 0.0] },
+            "0.25": { "vector": [0.08, -0.10, -0.04] },
+            "0.5": { "vector": [0.18, -0.24, -0.10] },
+            "0.75": { "vector": [0.30, -0.40, -0.20] },
+            "1.0": { "vector": [0.30, -0.40, -0.20] }
+          },
+          "rotation": {
+            "0.0": { "vector": [0.0, 0.0, 0.0] },
+            "0.25": { "vector": [-3.0, 2.0, -1.5] },
+            "0.5": { "vector": [-7.0, 5.0, -3.5] },
+            "0.75": { "vector": [-12.0, 8.0, -6.0] },
+            "1.0": { "vector": [-12.0, 8.0, -6.0] }
+          }
+        }
+      }
+    }
+  }
+}

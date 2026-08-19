@@ -1,0 +1,96 @@
+package otto.djgun.djcraft.combat;
+
+import com.google.gson.JsonParser;
+import org.junit.jupiter.api.Test;
+
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class DJItemTimingProfileTest {
+    @Test
+    void parsesCompleteAndPartialProfiles() {
+        DJItemTimingProfile complete = parse("""
+                {
+                  "beat_cooldown": 4,
+                  "switch_warmup": 1,
+                  "attack_energy_cost": 2.5,
+                  "use_energy_cost": 3
+                }
+                """);
+        assertEquals(4, complete.beatCooldown());
+        assertEquals(1, complete.switchWarmup());
+        assertEquals(2.5, complete.attackEnergyCost());
+        assertEquals(3.0, complete.useEnergyCost());
+        assertEquals(2.5, complete.resolveAttackEnergyCost());
+        assertEquals(3.0, complete.resolveUseEnergyCost());
+
+        DJItemTimingProfile cooldownOnly = parse("""
+                {"beat_cooldown": 0}
+                """);
+        assertEquals(0, cooldownOnly.beatCooldown());
+        assertNull(cooldownOnly.switchWarmup());
+        assertEquals(0.0, cooldownOnly.resolveAttackEnergyCost());
+        assertEquals(0.0, cooldownOnly.resolveUseEnergyCost());
+
+        DJItemTimingProfile warmupOnly = parse("""
+                {"switch_warmup": 0}
+                """);
+        assertNull(warmupOnly.beatCooldown());
+        assertEquals(0, warmupOnly.switchWarmup());
+
+        DJItemTimingProfile energyOnly = parse("""
+                {"attack_energy_cost": 0, "use_energy_cost": 1.25}
+                """);
+        assertEquals(0.0, energyOnly.attackEnergyCost());
+        assertEquals(1.25, energyOnly.useEnergyCost());
+    }
+
+    @Test
+    void rejectsInvalidProfiles() {
+        assertInvalid("{}");
+        assertInvalid("[]");
+        assertInvalid("{\"beat_cooldown\": -1}");
+        assertInvalid("{\"switch_warmup\": 0.5}");
+        assertInvalid("{\"beat_cooldown\": \"2\"}");
+        assertInvalid("{\"attack_energy_cost\": -1}");
+        assertInvalid("{\"use_energy_cost\": \"2\"}");
+        assertInvalid("{\"use_energy_cost\": 1e400}");
+        assertInvalid("{\"beat_cooldown\": 2, \"extra\": true}");
+    }
+
+    @Test
+    void builtInTridentProfilePreservesEnergyDefaults() throws Exception {
+        var stream = DJItemTimingProfileTest.class.getResourceAsStream(
+                "/data/minecraft/djcraft/item_timing/trident.json");
+        assertNotNull(stream);
+        try (stream; var reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+            DJItemTimingProfile profile = DJItemTimingProfile.parse(JsonParser.parseReader(reader));
+            assertEquals(5.0, profile.resolveAttackEnergyCost());
+            assertEquals(10.0, profile.resolveUseEnergyCost());
+        }
+    }
+
+    @Test
+    void builtInMaceProfileDefinesAreaAttackEnergyCost() throws Exception {
+        var stream = DJItemTimingProfileTest.class.getResourceAsStream(
+                "/data/minecraft/djcraft/item_timing/mace.json");
+        assertNotNull(stream);
+        try (stream; var reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
+            DJItemTimingProfile profile = DJItemTimingProfile.parse(JsonParser.parseReader(reader));
+            assertEquals(8.0, profile.resolveAttackEnergyCost());
+        }
+    }
+
+    private static DJItemTimingProfile parse(String json) {
+        return DJItemTimingProfile.parse(JsonParser.parseString(json));
+    }
+
+    private static void assertInvalid(String json) {
+        assertThrows(IllegalArgumentException.class, () -> parse(json));
+    }
+}

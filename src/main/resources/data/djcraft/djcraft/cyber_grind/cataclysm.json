@@ -1,0 +1,53 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:mod_loaded",
+      "modid": "cataclysm"
+    }
+  ],
+  "display_name": { "text": "灾变：末日试炼" },
+  "description": { "text": "L_Ender's Cataclysm 敌人与 Boss 的高难度无限波次" },
+  "advance_threshold": 7,
+  "warning_ticks": 50,
+  "party_budget_per_extra_player": 0.75,
+  "budget_ranges": [
+    { "min_wave": 1, "max_wave": 10, "base_budget": 10, "budget_per_wave": 3, "max_budget": 37 },
+    { "min_wave": 11, "max_wave": 20, "base_budget": 42, "budget_per_wave": 4, "max_budget": 78 },
+    { "min_wave": 21, "max_wave": 30, "base_budget": 84, "budget_per_wave": 6, "max_budget": 138 },
+    { "min_wave": 31, "base_budget": 150, "budget_per_wave": 8, "max_budget": 300 }
+  ],
+  "entries": [
+    { "entity": "cataclysm:endermaptera", "cost": 2, "draw_weight": 12, "min_wave": 1, "chance": 1.0, "min_count": 1, "max_count": 12 },
+    { "entity": "cataclysm:deepling", "cost": 2, "draw_weight": 10, "min_wave": 1, "chance": 0.9, "min_count": 0, "max_count": 10 },
+    { "entity": "cataclysm:koboleton", "cost": 3, "draw_weight": 9, "min_wave": 2, "chance": 0.85, "min_count": 0, "max_count": 10 },
+    { "entity": "cataclysm:the_watcher", "cost": 3, "draw_weight": 8, "min_wave": 3, "chance": 0.8, "min_count": 0, "max_count": 8 },
+    { "entity": "cataclysm:deepling_angler", "cost": 3, "draw_weight": 8, "min_wave": 3, "chance": 0.75, "min_count": 0, "max_count": 8 },
+    { "entity": "cataclysm:draugr", "cost": 3, "draw_weight": 9, "min_wave": 4, "chance": 0.8, "min_count": 0, "max_count": 10 },
+    { "entity": "cataclysm:ignited_berserker", "cost": 4, "draw_weight": 7, "min_wave": 5, "chance": 0.7, "min_count": 0, "max_count": 7 },
+    { "entity": "cataclysm:deepling_brute", "cost": 5, "draw_weight": 6, "min_wave": 5, "chance": 0.7, "min_count": 0, "max_count": 6 },
+    { "entity": "cataclysm:drowned_host", "cost": 5, "draw_weight": 5, "min_wave": 6, "chance": 0.6, "min_count": 0, "max_count": 6 },
+    { "entity": "cataclysm:royal_draugr", "cost": 5, "draw_weight": 6, "min_wave": 7, "chance": 0.65, "min_count": 0, "max_count": 6 },
+    { "entity": "cataclysm:deepling_priest", "cost": 6, "draw_weight": 5, "min_wave": 7, "chance": 0.55, "min_count": 0, "max_count": 5 },
+    { "entity": "cataclysm:elite_draugr", "cost": 7, "draw_weight": 4, "min_wave": 8, "chance": 0.55, "min_count": 0, "max_count": 5 },
+    { "entity": "cataclysm:deepling_warlock", "cost": 7, "draw_weight": 4, "min_wave": 9, "chance": 0.5, "min_count": 0, "max_count": 4 },
+
+    { "entity": "cataclysm:ender_golem", "cost": 12, "draw_weight": 3, "min_wave": 6, "chance": 0.35, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:ignited_revenant", "cost": 14, "draw_weight": 3, "min_wave": 8, "chance": 0.32, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:coral_golem", "cost": 15, "draw_weight": 3, "min_wave": 10, "chance": 0.3, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:amethyst_crab", "cost": 16, "draw_weight": 2, "min_wave": 11, "chance": 0.28, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:wadjet", "cost": 18, "draw_weight": 2, "min_wave": 13, "chance": 0.25, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:the_prowler", "cost": 18, "draw_weight": 2, "min_wave": 14, "chance": 0.24, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:coralssus", "cost": 20, "draw_weight": 2, "min_wave": 15, "chance": 0.22, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:aptrgangr", "cost": 21, "draw_weight": 2, "min_wave": 16, "chance": 0.2, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:kobolediator", "cost": 22, "draw_weight": 1, "min_wave": 17, "chance": 0.18, "min_count": 0, "max_count": 2 },
+    { "entity": "cataclysm:clawdian", "cost": 24, "draw_weight": 1, "min_wave": 18, "chance": 0.16, "min_count": 0, "max_count": 1 },
+
+    { "entity": "cataclysm:ender_guardian", "cost": 40, "draw_weight": 1, "min_wave": 20, "chance": 0.12, "min_count": 1, "max_count": 1 },
+    { "entity": "cataclysm:the_harbinger", "cost": 52, "draw_weight": 1, "min_wave": 23, "chance": 0.1, "min_count": 1, "max_count": 1 },
+    { "entity": "cataclysm:netherite_monstrosity", "cost": 56, "draw_weight": 1, "min_wave": 25, "chance": 0.09, "min_count": 1, "max_count": 1 },
+    { "entity": "cataclysm:ignis", "cost": 60, "draw_weight": 1, "min_wave": 27, "chance": 0.08, "min_count": 1, "max_count": 1 },
+    { "entity": "cataclysm:ancient_remnant", "cost": 64, "draw_weight": 1, "min_wave": 29, "chance": 0.08, "min_count": 1, "max_count": 1 },
+    { "entity": "cataclysm:maledictus", "cost": 72, "draw_weight": 1, "min_wave": 34, "chance": 0.06, "min_count": 1, "max_count": 1 },
+    { "entity": "cataclysm:scylla", "cost": 80, "draw_weight": 1, "min_wave": 38, "chance": 0.05, "min_count": 1, "max_count": 1 }
+  ]
+}

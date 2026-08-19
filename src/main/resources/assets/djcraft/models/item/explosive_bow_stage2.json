@@ -1,0 +1,4 @@
+{
+  "parent": "djcraft:item/explosive_bow_base",
+  "textures": { "layer0": "djcraft:item/explosive_bow_stage2" }
+}

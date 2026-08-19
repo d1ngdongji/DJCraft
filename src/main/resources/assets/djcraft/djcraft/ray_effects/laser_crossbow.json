@@ -1,0 +1,14 @@
+{
+  "core_color": "#A6FF70A0",
+  "halo_color": "#32FF7058",
+  "core_width": 0.035,
+  "halo_width": 0.11,
+  "beam_lifetime_ms": 180,
+  "burst_lifetime_ms": 240,
+  "burst_start_radius": 0.12,
+  "burst_end_radius": 0.75,
+  "pulse_speed": 8.0,
+  "first_person_main_muzzle": [0.0, -0.18, 0.45],
+  "first_person_offhand_muzzle": [-0.22, -0.18, 0.45],
+  "third_person_muzzle": [0.28, -0.35, 0.35]
+}

@@ -1,0 +1,10 @@
+{
+  "selectors": {
+    "items": ["minecraft:trident"]
+  },
+  "behavior": "djcraft:trident",
+  "melee": {
+    "cylinder_length": 5.0,
+    "radius": 1.0
+  }
+}

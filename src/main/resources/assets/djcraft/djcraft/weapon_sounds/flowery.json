@@ -1,0 +1,17 @@
+{
+  "fallback": "djcraft:generic",
+  "events": {
+    "dash": [
+      {
+        "sounds": [
+          { "event": "djcraft:ability.flowery_dash_1", "weight": 1 },
+          { "event": "djcraft:ability.flowery_dash_2", "weight": 1 },
+          { "event": "djcraft:ability.flowery_dash_3", "weight": 1 },
+          { "event": "djcraft:ability.flowery_dash_4", "weight": 1 }
+        ],
+        "volume": 3.0,
+        "pitch": 1.0
+      }
+    ]
+  }
+}

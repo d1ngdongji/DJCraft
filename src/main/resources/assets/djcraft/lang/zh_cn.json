@@ -1,0 +1,169 @@
+{
+  "itemGroup.djcraft": "DJCraft",
+  "attribute.djcraft.max_energy": "最大能量",
+  "key.category.djcraft.general": "DJCraft",
+  "key.djcraft.open_jukebox": "打开 DJ 播放器",
+  "key.djcraft.dash": "DJ 冲刺",
+  "djcraft.configuration.title": "DJCraft 配置",
+  "djcraft.configuration.section.djcraft.client.toml": "DJCraft 客户端视觉",
+  "djcraft.configuration.section.djcraft.client.toml.title": "DJCraft 客户端视觉",
+  "djcraft.configuration.beatPresentationMode": "谱面呈现模式",
+  "djcraft.configuration.beatPresentationMode.tooltip": "选择全新下落式谱面或原有 Legacy 呈现。",
+  "djcraft.configuration.beatPresentationMode.falling": "下落式",
+  "djcraft.configuration.beatPresentationMode.legacy": "Legacy",
+  "djcraft.configuration.fallingJudgeLineYPercent": "下落式判定线高度",
+  "djcraft.configuration.fallingJudgeLineYPercent.tooltip": "判定线在缩放后 GUI 高度中的百分比位置。",
+  "tooltip.djcraft.beat_cooldown": "DJ 冷却：%s 拍",
+  "tooltip.djcraft.switch_warmup": "切换前摇：%s 拍",
+  "tooltip.djcraft.flowery_dash": "位于副手或快捷栏时，冲刺变化为%s",
+  "tooltip.djcraft.attack_energy_cost": "攻击耗能：%s",
+  "tooltip.djcraft.use_energy_cost": "使用耗能：%s",
+  "tooltip.djcraft.item_tag.swift": "DJCraft 标签：Swift",
+  "tooltip.djcraft.item_tag.smash": "DJCraft 标签：Smash",
+  "tooltip.djcraft.dj_crafting_table_usage": "手持空白唱片右键使用",
+  "tooltip.djcraft.portable_jukebox_usage": "下蹲右键以放入唱片",
+  "tooltip.djcraft.disc_max_combo": "最大连击：%s",
+  "tooltip.djcraft.disc_play_time": "累计播放时长：%s",
+  "item.djcraft.empty_disc": "空白唱片",
+  "item.djcraft.djfumo": "DJ Fumo",
+  "item.djcraft.flowery": "Flowery",
+  "item.djcraft.note_in_a_bottle": "瓶中音符",
+  "tooltip.djcraft.note_in_a_bottle": "位于快捷栏或副手时：多段跳次数 +1",
+  "item.djcraft.band_of_energy": "能量手环",
+  "item.djcraft.laser_crossbow": "激光弩",
+  "item.djcraft.magic_crossbow": "魔法弩",
+  "item.djcraft.explosive_bow": "爆炸弓",
+  "effect.djcraft.rend": "撕裂",
+  "enchantment.djcraft.aerial_step": "踏空",
+  "enchantment.djcraft.rending": "裂创",
+  "enchantment.djcraft.ray_overcharge": "射线过载",
+  "tooltip.djcraft.band_of_energy": "位于快捷栏或副手时：最大能量 +%s",
+  "block.djcraft.dj_crafting_table": "DJ 工作台",
+  "item.djcraft.portable_jukebox": "随身音乐盒",
+  "container.djcraft.portable_jukebox": "随身音乐盒存储",
+  "message.djcraft.crafting_table_need_disc": "需要手持空白唱片",
+  "message.djcraft.crafting_invalid": "DJ 工作台操作已失效",
+  "message.djcraft.crafting_success": "已将曲目 %s 写入唱片",
+  "message.djcraft.play_not_available": "随身音乐盒中没有可播放的曲目 %s",
+  "message.djcraft.clock_desync": "播放时钟连续失步，DJ 会话已停止",
+  "message.djcraft.audio_unavailable": "声音播放已关闭或不可用，DJ 会话已强制退出",
+  "message.djcraft.download_success": "曲包下载完成：%s",
+  "message.djcraft.download_failed": "曲包下载失败：%s",
+  "message.djcraft.download_failure.not_found": "服务端不存在该曲包",
+  "message.djcraft.download_failure.too_large": "曲包超过配置的大小上限",
+  "message.djcraft.download_failure.busy": "已有一个传输正在进行",
+  "message.djcraft.download_failure.invalid": "传输数据无效",
+  "message.djcraft.download_failure.io_error": "文件读写失败",
+  "message.djcraft.download_failure.timeout": "传输超时",
+  "message.djcraft.download_failure.hash_mismatch": "曲包哈希不匹配",
+  "message.djcraft.download_failure.canceled": "传输已取消",
+  "message.djcraft.download_failure.reload_failed": "下载后的曲包无法加载",
+  "ui.djcraft.player.title": "DJCraft 播放器",
+  "ui.djcraft.crafting.title": "DJ 工作台",
+  "ui.djcraft.crafting.subtitle": "选择要写入手中空白唱片的曲目",
+  "ui.djcraft.crafting.empty": "请先安装或下载曲包，再写入唱片",
+  "ui.djcraft.empty.title": "没有可用曲目",
+  "ui.djcraft.player.empty": "这个随身音乐盒中没有可播放的唱片",
+  "ui.djcraft.play": "播放",
+  "ui.djcraft.stop": "停止",
+  "ui.djcraft.close": "关闭",
+  "ui.djcraft.previous": "上一首",
+  "ui.djcraft.next": "下一首",
+  "ui.djcraft.unknown_author": "未知作者",
+  "ui.djcraft.track_count": "%s 首曲目",
+  "ui.djcraft.track_meta": "%s  |  BPM %s  |  %s 个节拍",
+  "ui.djcraft.player.meta": "BPM %s  |  %s 个战斗节拍",
+  "ui.djcraft.player.statistics": "最大连击 %s  |  累计播放 %s",
+  "ui.djcraft.position": "%s / %s",
+  "ui.djcraft.mode.sequential": "顺序播放",
+  "ui.djcraft.mode.repeat_one": "单曲循环",
+  "ui.djcraft.mode.shuffle": "随机播放",
+  "ui.djcraft.trackpacks.open": "打开曲包目录",
+  "ui.djcraft.trackpacks.reload": "重载曲包",
+  "message.djcraft.trackpacks.open_failed": "无法打开曲目包存放目录",
+  "message.djcraft.trackpacks.reload_failed": "曲目包重载后资源刷新失败",
+  "message.djcraft.trackpacks.reloaded": "已重载 %s 个本地曲目包"
+  ,"ui.djcraft.group.title": "DJ 组网"
+  ,"ui.djcraft.group.create": "使用当前唱片机创建"
+  ,"ui.djcraft.group.accept": "接受邀请"
+  ,"ui.djcraft.group.decline": "拒绝邀请"
+  ,"ui.djcraft.group.invitation": "来自 %s 的组网邀请"
+  ,"ui.djcraft.group.owner": "创建者：%s"
+  ,"ui.djcraft.group.members": "成员：%s"
+  ,"ui.djcraft.group.pending": "准备中：%s"
+  ,"ui.djcraft.group.current": "正在播放：%s"
+  ,"ui.djcraft.group.invite_players": "邀请在线玩家"
+  ,"ui.djcraft.group.stop": "停止组网播放"
+  ,"ui.djcraft.group.leave": "退出组网"
+  ,"ui.djcraft.group.disband": "解散组网"
+  ,"ui.djcraft.group.retry": "重试下载"
+  ,"message.djcraft.group.already_member": "你已经处于一个 DJ 组网中"
+  ,"message.djcraft.group.empty_jukebox": "所选便携式唱片机中没有可播放唱片"
+  ,"message.djcraft.group.owner_only": "只有当前组网创建者可以执行此操作"
+  ,"message.djcraft.group.target_busy": "该玩家已经处于一个 DJ 组网中"
+  ,"message.djcraft.group.invited": "%s 邀请你加入 DJ 组网"
+  ,"message.djcraft.group.invite_sent": "已邀请 %s 加入 DJ 组网"
+  ,"message.djcraft.group.invite_missing": "该 DJ 组网邀请已失效"
+  ,"message.djcraft.group.invalid_track": "该歌曲不在组网播放列表中"
+  ,"message.djcraft.group.invalid_mode": "未知的组网播放模式"
+  ,"message.djcraft.group.owner_transferred": "你已成为新的 DJ 组网创建者"
+  ,"message.djcraft.group.not_member": "你当前不在 DJ 组网中"
+  ,"message.djcraft.group.status": "创建者：%s | 成员：%s | 准备中：%s | 模式：%s | 曲目：%s"
+  ,"message.djcraft.group.audio_recovering": "组网音频不可用，正在请求按共享进度重试"
+  ,"message.djcraft.group.audio_retry": "正在重试组网音频（%s/%s）"
+  ,"message.djcraft.group.audio_quarantined": "音频恢复失败，本曲结束前已禁用 DJ 战斗"
+  ,"ui.djcraft.download.title": "下载"
+  ,"ui.djcraft.download.idle": "当前没有下载任务"
+  ,"ui.djcraft.download.pause": "暂停"
+  ,"ui.djcraft.download.resume": "恢复"
+  ,"ui.djcraft.download.progress": "%s — %s%%（%s / %s）— %s"
+  ,"ui.djcraft.download.no_server_packs": "服务端尚未公布任何曲包"
+  ,"ui.djcraft.download.verified": "哈希已验证，可使用"
+  ,"ui.djcraft.download.mismatch": "本地内容哈希不匹配"
+  ,"ui.djcraft.download.missing": "尚未安装"
+  ,"ui.djcraft.download.action": "下载"
+  ,"ui.djcraft.download.redownload": "重新下载"
+  ,"ui.djcraft.download.retry": "重试"
+  ,"message.djcraft.play_unverified": "曲包 %s 尚未通过当前服务端哈希验证"
+  ,"message.djcraft.admin_play_checking": "正在检查 %s 的曲包 %s；缺失时将自动下载"
+  ,"message.djcraft.admin_play_downloading": "服务端请求播放曲包 %s，正在下载并验证"
+  ,"message.djcraft.admin_play_failed": "无法为 %s 启动曲包 %s：%s"
+  ,"message.djcraft.admin_play_started": "客户端验证完成，已启动曲包 %s（目标：%s）"
+  ,"message.djcraft.admin_play_accepted": "已接受曲包 %s 的播放请求；如有需要将等待客户端验证"
+  ,"message.djcraft.admin_play_accepted_many": "已接受曲包 %s 对 %s 名玩家的播放请求"
+  ,"ui.djcraft.cyber_grind.title": "电子血宫"
+  ,"ui.djcraft.cyber_grind.back": "返回唱片刻录"
+  ,"ui.djcraft.cyber_grind.start": "发起准备"
+  ,"ui.djcraft.cyber_grind.jukebox": "唱片机栏位 %s"
+  ,"ui.djcraft.cyber_grind.no_jukebox": "没有可播放的便携式唱片机"
+  ,"ui.djcraft.cyber_grind.no_presets": "服务器没有有效的电子血宫预设"
+  ,"ui.djcraft.cyber_grind.ready_title": "准备进入 %s？"
+  ,"ui.djcraft.cyber_grind.ready_members": "成员：%s"
+  ,"ui.djcraft.cyber_grind.accept": "准备完成"
+  ,"ui.djcraft.cyber_grind.decline": "拒绝"
+  ,"ui.djcraft.cyber_grind.exit": "退出血宫"
+  ,"ui.djcraft.cyber_grind.exit_confirm": "确定结束你当前的电子血宫挑战？"
+  ,"ui.djcraft.cyber_grind.cancel": "继续战斗"
+  ,"hud.djcraft.cyber_grind.countdown": "电子血宫 - %s 秒"
+  ,"hud.djcraft.cyber_grind.wave": "第 %s 波 - 权重 %s / %s"
+  ,"hud.djcraft.cyber_grind.completed": "已完成：%s"
+  ,"message.djcraft.cyber_grind.invalid_table": "DJ 工作台已不可用"
+  ,"message.djcraft.cyber_grind.invalid_profile": "该电子血宫预设不可用"
+  ,"message.djcraft.cyber_grind.invalid_playlist": "请选择有效的便携式唱片机播放列表"
+  ,"message.djcraft.cyber_grind.player_busy": "所选玩家中有人已在准备或进行电子血宫挑战"
+  ,"message.djcraft.cyber_grind.member_unavailable": "所有组网成员必须在线且存活"
+  ,"message.djcraft.cyber_grind.prepare_failed": "电子血宫准备失败：%s"
+  ,"message.djcraft.cyber_grind.prepare_timeout": "电子血宫准备超时"
+  ,"message.djcraft.cyber_grind.member_left": "有成员离开，电子血宫准备已取消"
+  ,"message.djcraft.cyber_grind.server_stopped": "服务器停止，电子血宫准备已取消"
+  ,"message.djcraft.cyber_grind.dimension_missing": "电子血宫维度不可用"
+  ,"message.djcraft.cyber_grind.playback_locked": "挑战期间电子血宫播放列表由服务器控制"
+  ,"message.djcraft.cyber_grind.result": "电子血宫结算 - 完成波数：%s，个人最佳：%s，组网最佳：%s"
+  ,"message.djcraft.cyber_grind.audio_retry": "正在重试电子血宫音频（%s/%s）"
+  ,"gamerule.djcraftOffBeatAttackDamagePercent": "DJCraft 不卡拍攻击剩余伤害百分比"
+  ,"gamerule.djcraftOffBeatAttackDamagePercent.description": "合法的不卡拍攻击保留的原版最终伤害百分比（0 表示取消）"
+  ,"gamerule.djcraftBaseMaxToleranceChances": "DJCraft 基础容错上限"
+  ,"gamerule.djcraftBaseMaxToleranceChances.description": "DJ 模式中可储存的基础连击保护次数"
+  ,"gamerule.djcraftIdleAttackableBeatsBeforeComboReset": "DJCraft 不攻击断连阈值"
+  ,"gamerule.djcraftIdleAttackableBeatsBeforeComboReset.description": "未产生卡拍命中多少个可攻击节拍后重置连击"
+}

@@ -1,0 +1,47 @@
+{
+	"format_version": "1.9.0",
+    "render_type": "minecraft:cutout",
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "djcraft:block/dj_crafting_table/dj_crafting_table_f",
+		"1": "djcraft:block/dj_crafting_table/dj_crafting_table_s",
+		"2": "djcraft:block/dj_crafting_table/dj_crafting_table_t",
+		"4": "djcraft:block/dj_crafting_table/table_disc",
+		"5": "djcraft:block/dj_crafting_table/crafting_table_read",
+		"6": "djcraft:block/dj_crafting_table/crafting_table_read_s",
+		"particle": "djcraft:block/dj_crafting_table/dj_crafting_table_f"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 16],
+			"faces": {
+				"north": {"uv": [0, 0, 16, 16], "texture": "#0"},
+				"east": {"uv": [0, 0, 16, 16], "texture": "#1"},
+				"south": {"uv": [0, 0, 16, 16], "texture": "#0"},
+				"west": {"uv": [0, 0, 16, 16], "texture": "#1"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#2"},
+				"down": {"uv": [0, 0, 8, 8], "texture": "#missing"}
+			}
+		},
+		{
+			"from": [0, 16, 0],
+			"to": [16, 16.25, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 16, 0]},
+			"faces": {
+				"up": {"uv": [0, 0, 16, 16], "rotation": 90, "texture": "#4"}
+			}
+		},
+		{
+			"from": [0, 16, 0],
+			"to": [16, 16.75, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 16, 0]},
+			"faces": {
+				"east": {"uv": [8, 0, 16, 0.5], "texture": "#6"},
+				"up": {"uv": [0, 0, 16, 16], "rotation": 90, "texture": "#5"}
+			}
+		}
+	],
+	"display": {}
+}

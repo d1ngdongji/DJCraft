@@ -1,0 +1,87 @@
+{
+  "ability.dash": {
+    "sounds": [
+      { "name": "djcraft:abilities/dash", "stream": false, "preload": true }
+    ]
+  },
+  "ability.flowery_dash_1": {
+    "sounds": [
+      { "name": "djcraft:abilities/flowery_dash_1", "stream": false, "preload": true }
+    ]
+  },
+  "ability.flowery_dash_2": {
+    "sounds": [
+      { "name": "djcraft:abilities/flowery_dash_2", "stream": false, "preload": true }
+    ]
+  },
+  "ability.flowery_dash_3": {
+    "sounds": [
+      { "name": "djcraft:abilities/flowery_dash_3", "stream": false, "preload": true }
+    ]
+  },
+  "ability.flowery_dash_4": {
+    "sounds": [
+      { "name": "djcraft:abilities/flowery_dash_4", "stream": false, "preload": true }
+    ]
+  },
+  "ability.double_jump": {
+    "sounds": [
+      { "name": "djcraft:abilities/double_jump", "stream": false, "preload": true }
+    ]
+  },
+  "ability.ground_slam_whoosh": {
+    "sounds": [
+      { "name": "djcraft:abilities/ground_slam_whoosh", "stream": false, "preload": true }
+    ]
+  },
+  "ability.ground_slam_land": {
+    "sounds": [
+      { "name": "djcraft:abilities/ground_slam_land", "stream": false, "preload": true }
+    ]
+  },
+  "ability.ground_slam_impact": {
+    "sounds": [
+      { "name": "djcraft:abilities/ground_slam_impact", "stream": false, "preload": true }
+    ]
+  },
+  "combat.parry": {
+    "sounds": [
+      { "name": "djcraft:combat/parry", "stream": false, "preload": true }
+    ]
+  },
+  "combat.deferred_damage": {
+    "sounds": [
+      { "name": "djcraft:combat/hurt", "stream": false, "preload": true }
+    ]
+  },
+  "weapon.laser_crossbow_shoot": {
+    "sounds": [
+      { "name": "djcraft:weapons/laser_crossbow_shoot", "stream": false, "preload": true }
+    ]
+  },
+  "weapon.magic_crossbow_shoot": {
+    "sounds": [
+      { "name": "djcraft:weapons/magic_crossbow_shoot", "stream": false, "preload": true }
+    ]
+  },
+  "weapon.explosive_bow_charge": {
+    "sounds": [
+      { "name": "djcraft:weapons/explosive_bow_charge", "stream": false, "preload": true }
+    ]
+  },
+  "weapon.explosive_bow_shoot": {
+    "sounds": [
+      { "name": "djcraft:weapons/explosive_bow_shoot", "stream": false, "preload": true }
+    ]
+  },
+  "weapon.trident_redirect": {
+    "sounds": [
+      { "name": "djcraft:weapons/trident_redirect", "stream": false, "preload": true }
+    ]
+  },
+  "weapon.ray_hit": {
+    "sounds": [
+      { "name": "djcraft:weapons/ray_hit", "stream": false, "preload": true }
+    ]
+  }
+}
