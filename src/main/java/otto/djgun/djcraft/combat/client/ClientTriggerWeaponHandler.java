@@ -79,7 +79,7 @@ public final class ClientTriggerWeaponHandler {
             DJAutoChargeClientState.begin(action.hand(), action.source(), action.stack(), action.session(),
                     profile, effective, proof.actionSequence());
         }
-        int cooldownBeats = DJItemCooldownManager.getBeatCooldown(action.stack());
+        int cooldownBeats = DJItemCooldownManager.getUseBeatCooldown(action.stack());
         DJTriggerWeaponHelper.applyCooldownBeats(action.player(), action.stack(), action.session(),
                 Math.max(0.0, cooldownBeats - 0.4));
         PacketDistributor.sendToServer(new DJAutoChargeStartPayload(proof, action.hand(), action.source()));

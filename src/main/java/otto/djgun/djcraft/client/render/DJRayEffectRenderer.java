@@ -126,9 +126,14 @@ public final class DJRayEffectRenderer {
             DJRayEffectProfile profile, long now) {
         shader.safeGetUniform("Time").set((float) (now % 100_000L) / 1_000.0F * profile.pulseSpeed());
         float beamProgress = Math.clamp((float) (now - effect.createdAtMs()) / profile.beamLifetimeMs(), 0.0F, 1.0F);
+        boolean widthAnimated = profile.beamWidthPeakScale() > 0.0F;
+        float widthScale = beamWidthScale(
+                profile.beamWidthStartScale(), profile.beamWidthPeakScale(), beamProgress);
         Vec3 start = muzzle(effect, profile);
-        renderBeam(poseStack, camera, start, effect.end(), profile.haloWidth(), profile.haloColor(), beamProgress);
-        renderBeam(poseStack, camera, start, effect.end(), profile.coreWidth(), profile.coreColor(), beamProgress);
+        renderBeam(poseStack, camera, start, effect.end(), profile.haloWidth() * widthScale,
+                profile.haloColor(), beamProgress, profile.beamFadeFromNear(), widthAnimated);
+        renderBeam(poseStack, camera, start, effect.end(), profile.coreWidth() * widthScale,
+                profile.coreColor(), beamProgress, profile.beamFadeFromNear(), widthAnimated);
 
         float burstProgress = Math.clamp((float) (now - effect.createdAtMs()) / profile.burstLifetimeMs(), 0.0F, 1.0F);
         float radius = burstRadius(profile.burstStartRadius(), profile.burstEndRadius(), burstProgress);
@@ -164,6 +169,17 @@ public final class DJRayEffectRenderer {
         return startRadius + (endRadius - startRadius) * eased;
     }
 
+    static float beamWidthScale(float startScale, float peakScale, float progress) {
+        if (peakScale <= 0.0F) {
+            return 1.0F;
+        }
+        float clamped = Math.clamp(progress, 0.0F, 1.0F);
+        float curve = (float) Math.sin(Math.PI * clamped);
+        return clamped <= 0.5F
+                ? startScale + (peakScale - startScale) * curve
+                : peakScale * curve;
+    }
+
     private static Vec3 muzzle(Effect effect, DJRayEffectProfile profile) {
         Minecraft minecraft = Minecraft.getInstance();
         boolean firstPerson = minecraft.player != null
@@ -194,7 +210,7 @@ public final class DJRayEffectRenderer {
     }
 
     private static void renderBeam(PoseStack poseStack, Vec3 camera, Vec3 start, Vec3 end,
-            float width, int color, float progress) {
+            float width, int color, float progress, boolean fadeFromNear, boolean widthAnimated) {
         Vec3 direction = end.subtract(start);
         if (direction.lengthSqr() < 1.0E-8) {
             return;
@@ -208,7 +224,7 @@ public final class DJRayEffectRenderer {
             side = new Vec3(1.0, 0.0, 0.0);
         }
         side = side.normalize().scale(width * 0.5);
-        setShaderMode(0.0F, progress);
+        setShaderMode(0.0F, progress, fadeFromNear, widthAnimated);
         drawQuad(poseStack, camera, start.add(side), start.subtract(side), end.subtract(side), end.add(side), color);
     }
 
@@ -226,7 +242,7 @@ public final class DJRayEffectRenderer {
             right = right.normalize();
         }
         Vec3 up = facing.cross(right).normalize();
-        setShaderMode(1.0F, progress);
+        setShaderMode(1.0F, progress, false, false);
         drawQuad(poseStack, camera,
                 center.subtract(right.scale(radius)).add(up.scale(radius)),
                 center.subtract(right.scale(radius)).subtract(up.scale(radius)),
@@ -239,7 +255,7 @@ public final class DJRayEffectRenderer {
         if (radius <= 0.0F) {
             return;
         }
-        setShaderMode(2.0F, progress);
+        setShaderMode(2.0F, progress, false, false);
         var buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLES,
                 DefaultVertexFormat.POSITION_TEX_COLOR);
         var matrix = poseStack.last().pose();
@@ -286,9 +302,12 @@ public final class DJRayEffectRenderer {
         return vertices;
     }
 
-    private static void setShaderMode(float mode, float progress) {
+    private static void setShaderMode(float mode, float progress,
+            boolean fadeFromNear, boolean widthAnimated) {
         shader.safeGetUniform("EffectMode").set(mode);
         shader.safeGetUniform("Progress").set(progress);
+        shader.safeGetUniform("BeamFadeFromNear").set(fadeFromNear ? 1.0F : 0.0F);
+        shader.safeGetUniform("BeamWidthAnimated").set(widthAnimated ? 1.0F : 0.0F);
     }
 
     private static void drawQuad(PoseStack poseStack, Vec3 camera,

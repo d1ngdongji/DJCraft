@@ -107,6 +107,7 @@ public class DJCraft {
         otto.djgun.djcraft.init.ModItems.ITEMS.register(modEventBus);
         otto.djgun.djcraft.init.ModCreativeModeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         otto.djgun.djcraft.init.ModDataComponents.DATA_COMPONENTS.register(modEventBus);
+        otto.djgun.djcraft.init.ModEntities.ENTITY_TYPES.register(modEventBus);
         ModAttributes.ATTRIBUTES.register(modEventBus);
         otto.djgun.djcraft.init.ModSounds.SOUNDS.register(modEventBus);
         otto.djgun.djcraft.init.ModEffects.EFFECTS.register(modEventBus);

@@ -30,6 +30,7 @@ import otto.djgun.djcraft.combat.DJMeleeBehaviorResolver;
 import otto.djgun.djcraft.combat.DJRayWeaponCombatService;
 import otto.djgun.djcraft.combat.DJRayWeaponManager;
 import otto.djgun.djcraft.combat.DJTridentCombatService;
+import otto.djgun.djcraft.combat.DJMaceCombatService;
 import otto.djgun.djcraft.combat.DJJudgmentVerifier;
 import otto.djgun.djcraft.combat.DJJudgmentVerifier.Verification;
 import otto.djgun.djcraft.combat.HitResult;
@@ -39,6 +40,7 @@ import otto.djgun.djcraft.network.packet.DJChargeReleasePayload;
 import otto.djgun.djcraft.network.packet.DJChargeStartPayload;
 import otto.djgun.djcraft.network.packet.DJTriggerFirePayload;
 import otto.djgun.djcraft.network.packet.DJTridentFirePayload;
+import otto.djgun.djcraft.network.packet.DJMaceThrowPayload;
 import otto.djgun.djcraft.network.packet.StopReason;
 import otto.djgun.djcraft.session.DJModeManager;
 import otto.djgun.djcraft.util.BeatGridUtil;
@@ -80,7 +82,7 @@ public final class DJCombatRequestHandler {
             verification.session().ignoreCurrentBeatForComboReset();
         }
         if (verification.accepted()) {
-            applyCooldown(player, actionStack, verification);
+            applyCooldown(player, actionStack, verification, false);
         }
         if (damageAuthorized) {
             DJActionContext action = DJActionContext.create(player,
@@ -197,7 +199,7 @@ public final class DJCombatRequestHandler {
                 return;
             }
         }
-        applyCooldown(player, action.stackSnapshot(), verification);
+        applyCooldown(player, action.stackSnapshot(), verification, true);
         stopAfterAction(player, verification);
     }
 
@@ -219,7 +221,7 @@ public final class DJCombatRequestHandler {
         HitResult result = valid ? verification.result() : HitResult.miss(payload.proof().clientTimeMs());
         recordMissIfNeeded(verification, payload.proof().actionSequence(), result);
         if (verification.accepted()) {
-            applyCooldown(player, stack, verification);
+            applyCooldown(player, stack, verification, true);
         }
         int offBeatDamagePercent = verification.session().getOffBeatAttackDamagePercent();
         boolean damageAuthorized = DJAttackExecutionRules.canExecute(valid, result, offBeatDamagePercent);
@@ -229,6 +231,40 @@ public final class DJCombatRequestHandler {
                         payload.proof().actionSequence(), payload.hand(), payload.source(), stack, result,
                         verification.stopAfterAction(), true, offBeatDamagePercent);
                 DJTridentCombatService.fire(player, action);
+            } else {
+                verification.session().sendResourceState();
+            }
+        }
+        stopAfterAction(player, verification);
+    }
+
+    public static void handleMaceThrow(DJMaceThrowPayload payload, IPayloadContext context) {
+        if (!(context.player() instanceof ServerPlayer player)) {
+            return;
+        }
+        ItemStack stack = payload.source().resolveAtActionStart(player, payload.hand());
+        DJItemBehaviorDefinition behavior = DJItemBehaviorManager.resolveDefinition(stack);
+        Verification verification = DJJudgmentVerifier.verify(
+                player, payload.proof(), behavior.disabledByCanAttack());
+        if (verification.session() == null) {
+            return;
+        }
+        boolean valid = verification.accepted()
+                && DJItemBehaviorManager.is(stack, DJItemBehavior.MACE)
+                && !player.getCooldowns().isOnCooldown(stack.getItem());
+        HitResult result = valid ? verification.result() : HitResult.miss(payload.proof().clientTimeMs());
+        recordMissIfNeeded(verification, payload.proof().actionSequence(), result);
+        if (verification.accepted()) {
+            applyCooldown(player, stack, verification, true);
+        }
+        int offBeatDamagePercent = verification.session().getOffBeatAttackDamagePercent();
+        boolean damageAuthorized = DJAttackExecutionRules.canExecute(valid, result, offBeatDamagePercent);
+        if (damageAuthorized) {
+            if (verification.session().tryConsumeEnergy(DJItemCooldownManager.getUseEnergyCost(stack))) {
+                DJActionContext action = DJActionContext.create(player, verification.session().getSessionId(),
+                        payload.proof().actionSequence(), payload.hand(), payload.source(), stack, result,
+                        verification.stopAfterAction(), true, offBeatDamagePercent);
+                DJMaceCombatService.throwMace(player, action);
             } else {
                 verification.session().sendResourceState();
             }
@@ -272,7 +308,7 @@ public final class DJCombatRequestHandler {
                 ? verification.result() : HitResult.miss(payload.proof().clientTimeMs());
 
         if (verification.accepted() && validWeapon && !wasOnCooldown) {
-            applyCooldown(player, stack, verification);
+            applyCooldown(player, stack, verification, true);
         }
         int offBeatDamagePercent = verification.session().getOffBeatAttackDamagePercent();
         boolean damageAuthorized = DJAttackExecutionRules.canExecute(
@@ -336,8 +372,11 @@ public final class DJCombatRequestHandler {
         return true;
     }
 
-    private static void applyCooldown(ServerPlayer player, ItemStack stack, Verification verification) {
-        int beatCooldown = DJItemCooldownManager.getBeatCooldown(stack);
+    private static void applyCooldown(ServerPlayer player, ItemStack stack, Verification verification,
+            boolean useAction) {
+        int beatCooldown = useAction
+                ? DJItemCooldownManager.getUseBeatCooldown(stack)
+                : DJItemCooldownManager.getBeatCooldown(stack);
         double waitBeats = Math.max(0, beatCooldown - 0.4);
         int ticks = BeatGridUtil.getDurationTicks(verification.session().getCurrentTimeMs(),
                 verification.session().getTrackPack().timeline().combatLine(), waitBeats);

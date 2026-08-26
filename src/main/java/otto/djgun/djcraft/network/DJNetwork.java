@@ -21,6 +21,7 @@ import otto.djgun.djcraft.network.packet.DJCraftingSelectTrackPayload;
 import otto.djgun.djcraft.network.packet.DJTriggerFirePayload;
 import otto.djgun.djcraft.network.packet.DJSessionStatePayload;
 import otto.djgun.djcraft.network.packet.DJTridentFirePayload;
+import otto.djgun.djcraft.network.packet.DJMaceThrowPayload;
 import otto.djgun.djcraft.network.packet.DJWeaponSoundIntentPayload;
 import otto.djgun.djcraft.network.packet.DJWeaponSoundBroadcastPayload;
 import otto.djgun.djcraft.network.packet.DJMovementAbilityPayload;
@@ -87,7 +88,7 @@ public final class DJNetwork {
 
     @SubscribeEvent
     public static void register(RegisterPayloadHandlersEvent event) {
-        var registrar = event.registrar(DJCraft.MODID).versioned("2.28.0");
+        var registrar = event.registrar(DJCraft.MODID).versioned("2.30.0");
 
         registrar.playToServer(DJAttackClientPayload.TYPE, DJAttackClientPayload.CODEC,
                 DJCombatRequestHandler::handleAttack);
@@ -101,6 +102,8 @@ public final class DJNetwork {
                 DJCombatRequestHandler::handleAutoChargeStart);
         registrar.playToServer(DJTridentFirePayload.TYPE, DJTridentFirePayload.CODEC,
                 DJCombatRequestHandler::handleTridentFire);
+        registrar.playToServer(DJMaceThrowPayload.TYPE, DJMaceThrowPayload.CODEC,
+                DJCombatRequestHandler::handleMaceThrow);
         registrar.playToServer(DJMovementAbilityPayload.TYPE, DJMovementAbilityPayload.CODEC,
                 DJMovementAbilityRequestHandler::handle);
         registrar.playToServer(DJShieldUsePayload.TYPE, DJShieldUsePayload.CODEC,

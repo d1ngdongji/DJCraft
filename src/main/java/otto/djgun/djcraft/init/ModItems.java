@@ -10,6 +10,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import otto.djgun.djcraft.DJCraft;
 import otto.djgun.djcraft.item.BandOfEnergyItem;
+import otto.djgun.djcraft.item.AssaultCrossbowItem;
 import otto.djgun.djcraft.item.DJFumoItem;
 import otto.djgun.djcraft.item.EmptyDiscItem;
 import otto.djgun.djcraft.item.HotbarOrOffhandEffectItem;
@@ -40,8 +41,11 @@ public class ModItems {
         public static final DeferredItem<CrossbowItem> MAGIC_CROSSBOW = ITEMS.registerItem("magic_crossbow",
                         CrossbowItem::new, rayCrossbowProperties());
 
+        public static final DeferredItem<AssaultCrossbowItem> ASSAULT_CROSSBOW = ITEMS.registerItem("assault_crossbow",
+                        AssaultCrossbowItem::new, rayCrossbowProperties());
+
         public static final DeferredItem<BowItem> EXPLOSIVE_BOW = ITEMS.registerItem("explosive_bow",
-                        BowItem::new, new Item.Properties().stacksTo(1).durability(384));
+                        BowItem::new, new Item.Properties().stacksTo(1).durability(768));
 
         public static final DeferredItem<Item> PORTABLE_JUKEBOX = ITEMS.registerItem("portable_jukebox",
                         otto.djgun.djcraft.item.PortableJukeboxItem::new,
@@ -54,7 +58,7 @@ public class ModItems {
                         new Item.Properties());
 
         private static Item.Properties rayCrossbowProperties() {
-                return new Item.Properties().stacksTo(1).durability(465)
+                return new Item.Properties().stacksTo(1).durability(930)
                                 .component(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
         }
 }

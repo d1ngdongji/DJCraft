@@ -18,6 +18,7 @@ class EnchantmentAssetTest {
         assertEnchantment("aerial_step", 2, "#minecraft:enchantable/foot_armor");
         assertEnchantment("rending", 3, "#minecraft:enchantable/trident");
         assertEnchantment("ray_overcharge", 4, "#djcraft:enchantable/ray_weapon");
+        assertEnchantment("lingering_sweep", 2, "#minecraft:enchantable/mace");
     }
 
     @Test
@@ -25,9 +26,23 @@ class EnchantmentAssetTest {
         JsonObject root = load("/data/djcraft/tags/item/enchantable/ray_weapon.json");
         var values = root.getAsJsonArray("values").asList().stream()
                 .map(value -> value.getAsString()).toList();
-        assertEquals(3, values.size());
+        assertEquals(4, values.size());
         assertTrue(values.contains("djcraft:laser_crossbow"));
         assertTrue(values.contains("djcraft:magic_crossbow"));
+        assertTrue(values.contains("djcraft:assault_crossbow"));
+        assertTrue(values.contains("djcraft:explosive_bow"));
+    }
+
+    @Test
+    void builtInRayWeaponsSupportVanillaDurabilityEnchantments() throws Exception {
+        JsonObject root = load("/data/minecraft/tags/item/enchantable/durability.json");
+        var values = root.getAsJsonArray("values").asList().stream()
+                .map(value -> value.getAsString()).toList();
+        assertEquals(false, root.get("replace").getAsBoolean());
+        assertEquals(4, values.size());
+        assertTrue(values.contains("djcraft:laser_crossbow"));
+        assertTrue(values.contains("djcraft:magic_crossbow"));
+        assertTrue(values.contains("djcraft:assault_crossbow"));
         assertTrue(values.contains("djcraft:explosive_bow"));
     }
 
@@ -40,6 +55,7 @@ class EnchantmentAssetTest {
         assertTrue(values.contains("djcraft:aerial_step"));
         assertTrue(values.contains("djcraft:rending"));
         assertTrue(values.contains("djcraft:ray_overcharge"));
+        assertTrue(values.contains("djcraft:lingering_sweep"));
     }
 
     private static void assertEnchantment(String id, int maxLevel, String supportedItems) throws Exception {

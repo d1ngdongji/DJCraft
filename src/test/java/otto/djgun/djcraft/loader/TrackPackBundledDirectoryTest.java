@@ -2,12 +2,15 @@ package otto.djgun.djcraft.loader;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -40,6 +43,55 @@ class TrackPackBundledDirectoryTest {
 
         assertEquals("Bundled", manager.getTrackPack("example").orElseThrow().meta().displayName());
         assertEquals("bundled art", read(manager.openFileStream("example", "art/marker.txt")));
+    }
+
+    @Test
+    void loadsBundledDjcraftArchiveAndKeepsItReadOnly() throws Exception {
+        Path gameDir = temporary.resolve("game");
+        Path bundledRoot = temporary.resolve("bundled");
+        Path source = temporary.resolve("source");
+        writePack(source, "Bundled archive", "archive art");
+        Files.createDirectories(bundledRoot);
+        Path archive = bundledRoot.resolve("example.djcraft");
+        try (ZipOutputStream zip = new ZipOutputStream(Files.newOutputStream(archive));
+                var paths = Files.walk(source)) {
+            for (Path path : paths.filter(Files::isRegularFile).sorted().toList()) {
+                zip.putNextEntry(new ZipEntry(source.relativize(path).toString().replace('\\', '/')));
+                Files.copy(path, zip);
+                zip.closeEntry();
+            }
+        }
+
+        TrackPackManager manager = new TrackPackManager();
+        manager.initialize(gameDir, bundledRoot);
+
+        assertEquals("Bundled archive", manager.getTrackPack("example").orElseThrow().meta().displayName());
+        assertEquals("archive art", read(manager.openFileStream("example", "art/marker.txt")));
+        try (InputStream audio = manager.openAudioStream("example")) {
+            assertNotNull(audio);
+        }
+        assertTrue(manager.getArchiveFilePath("example").isEmpty());
+
+        Path externalPack = gameDir.resolve("djcraft/trackpacks/example");
+        writePack(externalPack, "External", "external art");
+        manager.reloadPack("example");
+        assertEquals("External", manager.getTrackPack("example").orElseThrow().meta().displayName());
+
+        Files.delete(externalPack.resolve("track.json"));
+        manager.reloadPack("example");
+        assertEquals("Bundled archive", manager.getTrackPack("example").orElseThrow().meta().displayName());
+    }
+
+    @Test
+    void loadsCheckedInBundledArchives() throws Exception {
+        Path bundledRoot = Path.of(TrackPackBundledDirectoryTest.class
+                .getResource("/djcraft/trackpacks").toURI());
+        TrackPackManager manager = new TrackPackManager();
+
+        manager.initialize(temporary.resolve("game"), bundledRoot);
+
+        assertTrue(manager.isPackLoaded("bpm120"));
+        assertTrue(manager.isPackLoaded("i_got_smoke"));
     }
 
     private static void writePack(Path packDir, String displayName, String marker) throws Exception {

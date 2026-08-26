@@ -3,6 +3,7 @@ package otto.djgun.djcraft.session;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -22,6 +23,7 @@ import otto.djgun.djcraft.item.NoteInABottleItem;
 import otto.djgun.djcraft.network.packet.DJSessionStatePayload;
 import otto.djgun.djcraft.network.packet.DJMovementStatePayload;
 import otto.djgun.djcraft.combat.DJShieldRules;
+import otto.djgun.djcraft.combat.DJItemCooldownManager;
 import otto.djgun.djcraft.combat.HitResult;
 import otto.djgun.djcraft.util.BeatGridUtil;
 
@@ -450,7 +452,8 @@ public class DJSession {
                 return;
             }
             int ticks = BeatGridUtil.getDurationTicks(getCurrentTimeMs(),
-                    trackPack.timeline().combatLine(), DJShieldRules.MISSED_PARRY_COOLDOWN_BEATS);
+                    trackPack.timeline().combatLine(),
+                    DJItemCooldownManager.getUseBeatCooldown(new ItemStack(result.item())));
             if (ticks > 0) {
                 player.getCooldowns().addCooldown(result.item(), ticks);
             }

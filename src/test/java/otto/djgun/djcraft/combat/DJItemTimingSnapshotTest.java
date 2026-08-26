@@ -24,6 +24,7 @@ class DJItemTimingSnapshotTest {
 
         assertTrue(loaded.byId().containsKey("example:weapon"));
         assertEquals(4, loaded.byKey().get(7).resolveBeatCooldown(1));
+        assertEquals(4, loaded.byKey().get(7).resolveUseBeatCooldown(4));
         assertEquals(4, loaded.byKey().get(7).resolveSwitchWarmup(4));
 
         DJItemTimingSnapshot<String, Integer> removed = DJItemTimingSnapshot.empty();
@@ -35,10 +36,15 @@ class DJItemTimingSnapshotTest {
     void resolvesEachOptionalFieldIndependently() {
         DJItemTimingProfile cooldownOnly = new DJItemTimingProfile(3, null);
         assertEquals(3, cooldownOnly.resolveBeatCooldown(1));
+        assertEquals(3, cooldownOnly.resolveUseBeatCooldown(3));
         assertEquals(3, cooldownOnly.resolveSwitchWarmup(3));
 
         DJItemTimingProfile warmupOnly = new DJItemTimingProfile(null, 0);
         assertEquals(2, warmupOnly.resolveBeatCooldown(2));
         assertEquals(0, warmupOnly.resolveSwitchWarmup(2));
+
+        DJItemTimingProfile separateUseCooldown = new DJItemTimingProfile(3, 1, null, null, null);
+        assertEquals(3, separateUseCooldown.resolveBeatCooldown(2));
+        assertEquals(1, separateUseCooldown.resolveUseBeatCooldown(3));
     }
 }

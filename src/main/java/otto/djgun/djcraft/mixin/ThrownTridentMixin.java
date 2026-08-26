@@ -15,10 +15,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -30,6 +28,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import otto.djgun.djcraft.combat.DJRelativeProjectileCollision;
 import otto.djgun.djcraft.combat.DJTridentRules;
 import otto.djgun.djcraft.combat.access.AbstractArrowAccess;
 import otto.djgun.djcraft.combat.access.DJThrownTridentExtension;
@@ -228,10 +227,8 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
         if (!DJTridentRules.isSafeCollisionTrace(djcraft$preTickPosition, end)) {
             return;
         }
-        AABB searchBounds = new AABB(djcraft$preTickPosition, end).inflate(1.0);
-        EntityHitResult hit = ProjectileUtil.getEntityHitResult(
-                self.level(), self, djcraft$preTickPosition, end, searchBounds,
-                this::djcraft$canHitReturningTarget);
+        EntityHitResult hit = DJRelativeProjectileCollision.findFirstEntity(
+                self.level(), self, djcraft$preTickPosition, end, this::djcraft$canHitReturningTarget);
         if (hit != null) {
             djcraft$returnDamageAvailable = false;
             onHitEntity(hit);
@@ -280,9 +277,7 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
             cir.setReturnValue(null);
             return;
         }
-        AABB searchBounds = new AABB(start, end).inflate(1.0);
-        cir.setReturnValue(ProjectileUtil.getEntityHitResult(self.level(), self, start, end,
-                searchBounds,
+        cir.setReturnValue(DJRelativeProjectileCollision.findFirstEntity(self.level(), self, start, end,
                 entity -> ((AbstractArrowAccess) self).djcraft$canHitEntity(entity)));
     }
 

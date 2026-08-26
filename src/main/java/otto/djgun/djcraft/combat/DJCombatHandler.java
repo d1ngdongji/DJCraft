@@ -31,6 +31,7 @@ import otto.djgun.djcraft.session.DJNetworkGroupManager;
 import otto.djgun.djcraft.session.DJShieldState;
 import net.neoforged.neoforge.network.PacketDistributor;
 import otto.djgun.djcraft.network.packet.DJWeaponSoundBroadcastPayload;
+import otto.djgun.djcraft.entity.DJThrownMace;
 import otto.djgun.djcraft.network.packet.DJParrySuccessPayload;
 import otto.djgun.djcraft.network.packet.DJShieldParryWindowPayload;
 import otto.djgun.djcraft.network.server.DJGameplaySoundBroadcaster;
@@ -360,15 +361,16 @@ public final class DJCombatHandler {
                         });
             }
             if (confirmed.beatHit
-                    && event.getEntity().level() instanceof net.minecraft.server.level.ServerLevel level) {
+                    && !(event.getSource().getDirectEntity() instanceof DJThrownMace)
+                    && event.getEntity().level() instanceof net.minecraft.server.level.ServerLevel level
+                    && level.getPlayerByUUID(confirmed.attackerId) instanceof ServerPlayer attacker) {
                 long seed = confirmed.sequence * 0x9E3779B97F4A7C15L ^ event.getEntity().getUUID().hashCode();
-                PacketDistributor.sendToPlayersNear(level, null, event.getEntity().getX(), event.getEntity().getY(),
-                        event.getEntity().getZ(), 64.0,
+                PacketDistributor.sendToPlayersNear(level, null, attacker.getX(), attacker.getY(),
+                        attacker.getZ(), 64.0,
                         new DJWeaponSoundBroadcastPayload(Math.max(1L, confirmed.sequence), confirmed.attackerId,
                                 confirmed.sequence, confirmed.hand,
                                 DJWeaponSoundSemantic.TARGET_HIT, confirmed.profileId, BeatOutcome.HIT,
-                                TargetOutcome.HIT, event.getEntity().getX(), event.getEntity().getY(),
-                                event.getEntity().getZ(), seed));
+                                TargetOutcome.HIT, attacker.getX(), attacker.getY(), attacker.getZ(), seed));
             }
         }
     }

@@ -10,7 +10,7 @@
 
 DJCraft 提供物品 DJ 战斗时序、专用行为和即时射线 Profile 的服务器数据包加载器。除此之外，数据包还可以使用原版 Minecraft 机制：
 
-- 覆盖任意物品的 DJ 冷却、切换前摇和命中能量成本；
+- 分别覆盖任意物品的 DJ 左键/右键冷却、切换前摇和动作能量成本；
 - 为原版或其他模组物品选择蓄力、触发、三叉戟式、重锤式、盾牌等既有 DJ 动作；
 - 将已进入 trigger family 的物品配置为服务端权威即时射线武器；
 - 通过 `djcraft:swift` 和 `djcraft:smash` 物品标签接入节拍类别伤害规则；
@@ -19,10 +19,14 @@ DJCraft 提供物品 DJ 战斗时序、专用行为和即时射线 Profile 的�
 - 在附属 Mod/整合包自己的战利品表、进度、函数、谓词和标签中引用 DJCraft 注册内容；
 - 使用原版物品堆栈组件语法生成带 DJCraft 数据组件的唱片（需谨慎，见本文限制）。
 
-内置数据包还定义三个可由附魔台抽取的原版数据驱动附魔：`djcraft:aerial_step`（靴子，最高 II，
+内置数据包还定义四个可由附魔台抽取的原版数据驱动附魔：`djcraft:aerial_step`（靴子，最高 II，
 每级增加 1 次空中多段跳）、`djcraft:rending`（三叉戟，最高 III，每级使 DJ 三叉戟施加的基础
 撕裂 II 再提高 1 级）和 `djcraft:ray_overcharge`（标签 `#djcraft:enchantable/ray_weapon`，最高 IV，
-每级增加 2 射线伤害）。整合包可按原版 `data/<namespace>/enchantment/` 与附魔标签规则覆盖它们。
+每级增加 2 射线伤害），以及 `djcraft:lingering_sweep`（原版重锤附魔标签，最高 II，每级为
+`djcraft:mace` 左键窗口增加 3 tick；II 只限制正常获取，命令写入的超等级仍线性生效）。整合包可按
+原版 `data/<namespace>/enchantment/` 与附魔标签
+规则覆盖它们。
+四种内置射线武器还加入了 `#minecraft:enchantable/durability`，因此可正常获得耐久与经验修补。
 
 以下内容目前**不是数据包能力**：曲目包、战斗节拍 definition、能量的获取/上限规则、移动能力参数、第一人称动画、武器音效 Profile、HUD 布局。
 
@@ -90,34 +94,41 @@ data/examplemod/djcraft/item_timing/weapons/rifle.json
 ```json
 {
   "beat_cooldown": 4,
+  "use_beat_cooldown": 2,
   "switch_warmup": 1,
   "attack_energy_cost": 2.5,
   "use_energy_cost": 3
 }
 ```
 
-- `beat_cooldown`：可选的 DJ 冷却拍数，也是蓄力型武器计算满力时间时读取的拍数；
+- `beat_cooldown`：可选的左键 DJ 冷却拍数；
+- `use_beat_cooldown`：可选的右键 DJ 冷却拍数，弓也用它计算达到满力所需的拍数；
 - `switch_warmup`：可选的切换到该物品时的前摇拍数；
 - `attack_energy_cost`：可选的主手普通攻击能量成本；三叉戟左键范围攻击也读取此值；
-- `use_energy_cost`：可选的 DJCraft 已接管右键动作能量成本，包括弓释放、弩发射、风弹发射和三叉戟投掷；
+- `use_energy_cost`：可选的 DJCraft 已接管右键动作能量成本，包括弓释放、弩发射、风弹发射、三叉戟投掷和重锤投掷；
 - 时序值必须是 0 到 Java 32 位有符号整数上限之间的整数；能量值必须是有限、非负的 JSON 数字，允许小数；
 - 至少提供一个字段，不允许未知字段。
 
-缺少 `beat_cooldown` 时，继续按物品主手攻击速度计算 1–4 拍。缺少 `switch_warmup` 时，使用该物品最终得到的 `beat_cooldown`。因此只覆盖冷却会同时改变默认切换前摇；如需关闭前摇，应显式写 `"switch_warmup": 0`。
+缺少 `beat_cooldown` 时，继续按物品主手攻击速度计算 1–4 拍。缺少 `use_beat_cooldown` 时，回退到
+该物品最终得到的 `beat_cooldown`，因此旧数据包的左右键时序保持不变。缺少 `switch_warmup` 时也
+使用最终 `beat_cooldown`；只覆盖左键冷却会同时改变默认右键回退和切换前摇，如需独立控制应显式
+提供 `use_beat_cooldown` 和 `switch_warmup`。
 
 缺少能量字段时，对应动作成本为 0。能量只在节拍判定命中且动作通过服务端物品/冷却校验后扣除；判定 Miss 不扣除。服务端权威扣费，客户端同步 Profile 仅用于在本地能量不足时提前拦截。`attack_energy_cost` 可配置到任意已注册物品，因为普通主手攻击都经过 DJCraft 判定；`use_energy_cost` 不会自动接管普通食物、方块等任意右键逻辑，仅对上述已有 DJ 专用右键流程生效。
 
 DJCraft 内置以下 Profile，行为与迁移前一致：
 
-| 物品 | `beat_cooldown` | `switch_warmup` | `attack_energy_cost` | `use_energy_cost` |
-|---|---:|---:|---:|---:|
-| `minecraft:bow` | 2 | 0 | 0 | 0 |
-| `minecraft:crossbow` | 4 | 1 | 0 | 0 |
-| `djcraft:laser_crossbow` | 2 | 1 | 0 | 3 |
-| `djcraft:magic_crossbow` | 2 | 1 | 0 | 3 |
-| `djcraft:explosive_bow` | 2 | 1 | 0 | 6 |
-| `minecraft:trident` | 2 | 1 | 5 | 10 |
-| `minecraft:mace` | 按攻击速度计算 | 1 | 8 | 0 |
+| 物品 | `beat_cooldown` | `use_beat_cooldown` | `switch_warmup` | `attack_energy_cost` | `use_energy_cost` |
+|---|---:|---:|---:|---:|---:|
+| `minecraft:bow` | 2 | 2 | 0 | 0 | 0 |
+| `minecraft:crossbow` | 4 | 4 | 1 | 0 | 0 |
+| `minecraft:shield` | 1 | 2 | 0 | 0 | 专用规则 |
+| `djcraft:laser_crossbow` | 2 | 2 | 1 | 0 | 3 |
+| `djcraft:magic_crossbow` | 2 | 2 | 1 | 0 | 3 |
+| `djcraft:assault_crossbow` | 1 | 1 | 1 | 0 | 2 |
+| `djcraft:explosive_bow` | 2 | 2 | 1 | 0 | 6 |
+| `minecraft:trident` | 2 | 2 | 1 | 5 | 10 |
+| `minecraft:mace` | 按攻击速度计算 | 2 | 1 | 8 | 10 |
 
 ### 3.3 覆盖、校验与同步
 
@@ -125,7 +136,7 @@ DJCraft 内置以下 Profile，行为与迁移前一致：
 
 未知物品、非法负数、时序小数、非有限能量数、错误类型、未知字段和空 Profile 会记录明确错误并忽略该文件，其他合法文件仍会生效。解析只发生在重载阶段，不发生在战斗、Tick 或渲染热路径。
 
-服务端是权威来源。玩家加入以及服务器执行 `/reload` 时，服务端会将完整有效 Profile 快照同步给相关客户端；客户端不需要安装服务器数据包副本。同步结果同时用于客户端冷却、切换动画、Tooltip 和能量预检，以及服务端攻击冷却校验与最终扣费。Tooltip 会分别显示非零的“攻击耗能”和“使用耗能”；值为 0 或缺少对应字段时不显示该行。
+服务端是权威来源。玩家加入以及服务器执行 `/reload` 时，服务端会将完整有效 Profile 快照同步给相关客户端；客户端不需要安装服务器数据包副本。同步结果同时用于客户端左右键冷却、切换动画、Tooltip 和能量预检，以及服务端冷却校验与最终扣费。Tooltip 对显式配置 `use_beat_cooldown` 的物品分别显示攻击/使用冷却，并分别显示非零的“攻击耗能”和“使用耗能”；能耗为 0 或缺少时不显示对应行。
 
 旧配置项 `itemBeatCooldowns`、`itemSwitchWarmups` 已移除且不再作为回退来源。
 
@@ -152,6 +163,9 @@ data/<物品命名空间>/djcraft/ray_weapons/<物品路径>.json
 
 内置魔法弩使用相同的 96 格射程与软辅助瞄准，但设置 `base_damage: 16.0`、
 `pierce_entities: false` 和 `effect: "djcraft:magic_crossbow"`，因此服务端只伤害最近的合法目标。
+
+内置冲锋弩同样只命中最近目标，使用 `base_damage: 7.0` 和 `effect: "djcraft:assault_crossbow"`。
+它的可选药箭消耗与相对原版药箭减半的持续时间属于物品专用 Java 行为，不是射线 Profile 字段。
 
 爆炸弓还使用可选延迟发射和爆炸字段：
 
@@ -256,9 +270,13 @@ data/<namespace>/djcraft/item_behaviors/<profile>.json
   3 拍后返回，并在投掷伤害后
   施加 `djcraft:rend` II 8 秒；`djcraft:rending` 每级再提高 1 个撕裂等级。生成的 DJ 三叉戟使用原版 2 倍宽高碰撞箱和同步发光轮廓；忠诚仅在
   投射物中心进入主人眼位 0.25 格内时完成回收，不使用扩大碰撞箱产生的提前吸附。投射物不穿透实体
-  或方块，首次碰撞会立即开始忠诚返程；返程以最高 2.5 速度再攻击一个敌对生物。近战打回沿攻击者
+  或方块，首次碰撞会立即开始忠诚返程；去程和返程均按投射物完整碰撞箱与目标当 tick 相对位移连续
+  扫掠并选择最早接触实体，方块仍截断去程。返程以最高 2.5 速度再攻击一个敌对生物。近战打回沿攻击者
   瞄准方向以 2.5 速度重新发射；右键投掷每次实际伤害独立增加连击，不使用通用 sequence 去重；
-  `mace` 选择同类范围左键，默认圆柱长度 2、半径 2；
+  `mace` 选择同类范围左键和即时重锤投掷，默认圆柱长度 2、半径 2。右键生成动作物品栈的视觉
+  副本，初速 1.75、重力 0.07、碰撞箱宽高 0.75 格、最长 60 tick；撞方块或首个可伤害生物后
+  消失；实体命中按完整投射物碰撞箱与目标当 tick 相对位移连续扫掠，方块先截断检测线段。基础伤害 16 并
+  应用节拍类别倍率，命中后无视击退抗性为目标现有 Y 速度增加 1.6。投掷不移除物品也不损耗耐久；
 - `djcraft:none` 用于退出 Java 继承提供的自动行为，不会给普通物品增加新能力。
 
 `melee` 可省略并按所选行为使用注册默认值，也可部分覆盖。普通软捕获行为支持：
@@ -274,7 +292,8 @@ data/<namespace>/djcraft/item_behaviors/<profile>.json
 注册范围行为支持 `cylinder_length` 和 `radius`。距离、长度、半径必须是 `(0, 64]` 的有限数，
 两个角度必须是 `[0, 90)` 的有限数。软捕获字段写入范围行为、胶囊字段写入普通行为、未知字段或
 非法数值都会只拒绝该 Profile。缺失字段从注册默认值补齐；`/reload` 只改变之后开启的攻击窗口，
-已有 2 tick 窗口继续使用自己的不可变快照。参数是服务端权威数据，不随行为 ID 映射同步给客户端。
+已有普通 2 tick 或 `mace` 4 tick 窗口继续使用自己的不可变快照。参数是服务端权威数据，不随行为
+ID 映射同步给客户端。
 内置三叉戟和重锤 Profile 分别位于
 `data/minecraft/djcraft/item_behaviors/trident.json` 与
 `data/minecraft/djcraft/item_behaviors/mace.json`；同资源路径的高优先级数据包文件可整体覆盖它们。
@@ -353,6 +372,33 @@ data/<namespace>/djcraft/item_behaviors/<profile>.json
 
 无序合成输入为一个 `minecraft:note_block`，输出一个
 `djcraft:portable_jukebox`。
+
+### 4.7 冲锋弩
+
+资源 ID：`djcraft:assault_crossbow`
+
+有序配方为 `IRI/HCH/IRI`：`I` 是铁块，`R` 是红石块，`H` 是绊线钩，`C` 是弩。
+
+### 4.8 魔法弩
+
+资源 ID：`djcraft:magic_crossbow`
+
+有序配方为 `EAE/DCD/ESE`：`E` 是回响碎片，`A` 是附魔台，`D` 是钻石块，`C` 是弩，
+`S` 是下界之星。
+
+### 4.9 激光弩
+
+资源 ID：`djcraft:laser_crossbow`
+
+有序配方为 `OBO/NCN/ODO`：`O` 是侦测器，`B` 是信标，`N` 是下界合金锭，`C` 是弩，
+`D` 是钻石块。
+
+### 4.10 爆炸弓
+
+资源 ID：`djcraft:explosive_bow`
+
+有序配方为 `TET/NBN/TST`：`T` 是 TNT，`E` 是末地水晶，`N` 是下界合金锭，`B` 是弓，
+`S` 是下界之星。
 
 ## 5. 覆盖内置配方
 
@@ -505,7 +551,7 @@ JSON，当前代码不会读取。默认值和对玩法的精确影响见
 ## 11. 当前未完成的数据包扩展点
 
 1. **没有数据包曲目注册表。** 曲目只从 DJCraft JAR 内置目录或游戏目录外置目录/`.djcraft` 扫描。
-2. **战斗 Profile 仍不完整。** 物品冷却、换物预热和已判定动作的能量成本已数据化，
+2. **战斗 Profile 仍不完整。** 物品左右键冷却、换物预热和已判定动作的能量成本已数据化，
    `item_behaviors` 可选择内置或附属 Mod 注册的行为 ID，并可覆盖已注册普通近战距离/角度或
    胶囊长度/半径；伤害公式、窗口时长和移动规则仍不能由 JSON 任意定义。只配置
    `use_energy_cost` 不会自动选择 `charge` 或 `trigger`。

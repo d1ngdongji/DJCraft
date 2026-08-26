@@ -4,6 +4,8 @@ uniform vec4 ColorModulator;
 uniform float EffectMode;
 uniform float Progress;
 uniform float Time;
+uniform float BeamFadeFromNear;
+uniform float BeamWidthAnimated;
 
 in vec4 vertexColor;
 in vec2 texCoord0;
@@ -15,8 +17,13 @@ void main() {
     if (EffectMode < 0.5) {
         float edge = abs(texCoord0.y * 2.0 - 1.0);
         float body = 1.0 - smoothstep(0.18, 1.0, edge);
-        float pulse = 0.78 + 0.22 * sin((texCoord0.x * 22.0 - Time) * 6.2831853);
-        alpha = body * pulse * (1.0 - Progress);
+        if (BeamFadeFromNear > 0.5) {
+            float fadeStart = Progress * 1.12 - 0.12;
+            float travelFade = smoothstep(fadeStart, fadeStart + 0.12, texCoord0.x);
+            alpha = body * travelFade;
+        } else {
+            alpha = body * (BeamWidthAnimated > 0.5 ? 1.0 : 1.0 - Progress);
+        }
     } else if (EffectMode < 1.5) {
         float distanceFromCenter = length(texCoord0 - vec2(0.5)) * 2.0;
         float ring = 1.0 - smoothstep(0.08, 0.22, abs(distanceFromCenter - 0.72));

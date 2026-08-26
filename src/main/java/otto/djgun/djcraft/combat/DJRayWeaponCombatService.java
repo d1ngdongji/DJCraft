@@ -16,10 +16,12 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.neoforged.neoforge.network.PacketDistributor;
 import otto.djgun.djcraft.network.packet.DJRayEffectPayload;
 import otto.djgun.djcraft.cybergrind.CyberGrindManager;
 import otto.djgun.djcraft.init.ModEnchantments;
+import otto.djgun.djcraft.item.AssaultCrossbowItem;
 
 /** Authoritative block-clipped ray tracing and damage for trigger-family ray weapons. */
 public final class DJRayWeaponCombatService {
@@ -32,6 +34,9 @@ public final class DJRayWeaponCombatService {
         Vec3 direction = resolveDirection(player, origin, look, profile);
         Trace trace = trace(player, origin, direction, profile.range());
         Vec3 end = trace.end();
+        PotionContents potionArrow = action.stackSnapshot().getItem() instanceof AssaultCrossbowItem
+                ? AssaultCrossbowItem.consumeTippedArrow(player)
+                : PotionContents.EMPTY;
 
         List<Contact> contacts = collectContacts(player, origin, end, profile.explosion() != null);
         LivingEntity directTarget = null;
@@ -51,8 +56,11 @@ public final class DJRayWeaponCombatService {
         double directDamage = profile.baseDamage() > 0.0 ? profile.baseDamage() + enchantmentDamage : 0.0;
         if (directDamage > 0.0) {
             for (Contact contact : contacts) {
-                hurt(player, damageAction, contact.target(), player.damageSources().playerAttack(player),
-                        directDamage);
+                boolean damaged = hurt(player, damageAction, contact.target(),
+                        player.damageSources().playerAttack(player), directDamage);
+                if (damaged && potionArrow.hasEffects()) {
+                    AssaultCrossbowItem.applyPotionEffects(player, contact.target(), potionArrow);
+                }
             }
         }
 
@@ -194,11 +202,11 @@ public final class DJRayWeaponCombatService {
                 0.9F + player.getRandom().nextFloat() * 0.2F);
     }
 
-    private static void hurt(ServerPlayer player, DJActionContext action, LivingEntity target,
+    private static boolean hurt(ServerPlayer player, DJActionContext action, LivingEntity target,
             DamageSource source, double damage) {
         DJCombatHandler.receivePendingJudgment(player, action);
         try {
-            target.hurt(source, (float) damage);
+            return target.hurt(source, (float) damage);
         } finally {
             DJCombatHandler.discardPendingJudgment(player.getUUID());
         }

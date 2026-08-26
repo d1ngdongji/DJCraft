@@ -8,6 +8,8 @@
     { "name": "ColorModulator", "type": "float", "count": 4, "values": [1.0, 1.0, 1.0, 1.0] },
     { "name": "EffectMode", "type": "float", "count": 1, "values": [0.0] },
     { "name": "Progress", "type": "float", "count": 1, "values": [0.0] },
-    { "name": "Time", "type": "float", "count": 1, "values": [0.0] }
+    { "name": "Time", "type": "float", "count": 1, "values": [0.0] },
+    { "name": "BeamFadeFromNear", "type": "float", "count": 1, "values": [0.0] },
+    { "name": "BeamWidthAnimated", "type": "float", "count": 1, "values": [0.0] }
   ]
 }

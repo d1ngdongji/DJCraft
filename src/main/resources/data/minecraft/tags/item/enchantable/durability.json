@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "djcraft:laser_crossbow",
+    "djcraft:magic_crossbow",
+    "djcraft:assault_crossbow",
+    "djcraft:explosive_bow"
+  ]
+}

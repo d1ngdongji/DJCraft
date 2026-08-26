@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "combat",
+  "pattern": [
+    "TET",
+    "NBN",
+    "TST"
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:tnt"
+    },
+    "E": {
+      "item": "minecraft:end_crystal"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "B": {
+      "item": "minecraft:bow"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "djcraft:explosive_bow"
+  }
+}

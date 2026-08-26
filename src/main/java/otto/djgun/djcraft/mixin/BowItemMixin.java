@@ -29,7 +29,7 @@ public class BowItemMixin {
             return;
         }
 
-        int fullPowerBeats = DJItemCooldownManager.getBeatCooldown(activeStack);
+        int fullPowerBeats = DJItemCooldownManager.getUseBeatCooldown(activeStack);
         int fullPowerTicks = otto.djgun.djcraft.util.BeatGridUtil.getDurationTicks(
                 session.getCurrentTimeMs(), session.getTrackPack().timeline().combatLine(), fullPowerBeats);
         if (fullPowerTicks <= 0) {

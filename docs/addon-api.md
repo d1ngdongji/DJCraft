@@ -605,10 +605,10 @@ ExampleItems.PASSIVE.get().isActiveFor(player)
 - 标准长按/释放物品可通过 `djcraft:charge` 接入两阶段判定；标准右键 `ItemStack.use()`
   触发物品可通过 `djcraft:trigger` 接入服务端执行和投射物追踪；
 - `djcraft:trident`、`djcraft:mace` 可把其他注册物品接入胶囊范围近战执行器，尺寸可由物品
-  Profile 覆盖；
+  Profile 覆盖；两者也会接入各自的即时右键投掷流程；
 - 武器声音默认按物品注册 ID 匹配资源 Profile；
 - 服务端管理员可通过 `data/<物品命名空间>/djcraft/item_timing/<物品路径>.json` 为附属 Mod
-  物品覆盖 DJ 冷却、切换前摇、普通攻击能量成本，以及已接入 DJ 专用右键流程的使用能量成本。
+  物品分别覆盖 DJ 左右键冷却、切换前摇、普通攻击能量成本，以及已接入 DJ 专用右键流程的使用能量成本。
 
 这些内置处理器的实际攻击、能耗和连击语义见
 [游戏机制与实现：武器专用机制](gameplay-mechanics.md#weapons)。本节的“自动获得”只表示
@@ -645,7 +645,7 @@ data/<namespace>/djcraft/item_behaviors/<profile>.json
 | `djcraft:charge` | 任意注册物品；接入标准长按与释放，最终效果仍由原物品释放逻辑产生 |
 | `djcraft:trigger` | 任意注册物品；Hit 后在服务端调用动作来源栈的 `ItemStack.use()` |
 | `djcraft:trident` | 任意注册物品；选择圆柱长 5、半径 1 的胶囊范围左键与即时投掷执行器 |
-| `djcraft:mace` | 任意注册物品；选择圆柱长 2、半径 2 的胶囊范围左键执行器 |
+| `djcraft:mace` | 任意注册物品；选择持续 4 tick、圆柱长 2、半径 2 的胶囊范围左键与即时重锤投掷执行器 |
 | `djcraft:none` | 退出显式或 Java 继承行为，不为物品增加动作能力 |
 
 注册表还包含不可由 `item_behaviors` 分配给物品的动作行为：`djcraft:melee`、`djcraft:mining`、
@@ -661,16 +661,32 @@ data/<namespace>/djcraft/item_behaviors/<profile>.json
 `item_behaviors` 不能在 JSON 中注册 Java 类、脚本、payload 或任意伤害公式；它可以通过 `melee`
 对象覆盖注册普通近战的 `reach`/两个角度，或范围近战的 `cylinder_length`/`radius`。附属 Mod
 注册的自定义行为 ID 及其执行器属于代码注册表，也可以被这里的选择器引用。`item_timing` 只提供
-`beat_cooldown`、`switch_warmup`、
+`beat_cooldown`、`use_beat_cooldown`、`switch_warmup`、
 `attack_energy_cost` 和 `use_energy_cost`；仅配置 `use_energy_cost` 不会自动选择右键行为。
+对应 public record 为
+`DJItemTimingProfile(Integer beatCooldown, Integer useBeatCooldown, Integer switchWarmup, Double attackEnergyCost, Double useEnergyCost)`；
+原有两参数和四参数构造器继续保留，并令 `useBeatCooldown=null`。运行时可通过
+`DJItemCooldownManager.getBeatCooldown(stack)` 查询左键值、通过 `getUseBeatCooldown(stack)` 查询带
+旧字段回退的右键值；`hasExplicitUseBeatCooldown(stack)` 只判断新字段是否显式存在。
 
 `djcraft:trident` family 的服务端执行器还会为生成的三叉戟启用永久无重力、三拍忠诚返回、返回中
 可近战打回、原版 2 倍宽高碰撞箱、同步发光轮廓、0.25 格中心回收判定和投掷命中施加
 `djcraft:rend`。投射物不穿透实体或方块，首次碰撞立即开始忠诚返程；有效会话内的返程以最高 2.5
-速度再攻击一个敌对生物。近战打回沿攻击者服务端视线方向以 2.5 速度重新发射。DJ 三叉戟右键投掷
+速度再攻击一个敌对生物。去程和返程都由服务端以完整投射物 AABB 和目标当 tick 位移做相对运动
+连续扫掠，按首次接触排序；去程的实体线段仍受方块截断。近战打回沿攻击者服务端视线方向以 2.5 速度重新发射。DJ 三叉戟右键投掷
 每次实际伤害独立增加连击，不使用通用 sequence 去重。`djcraft:rend` 是普通注册表状态效果：等级从 amplifier 0
 开始，每级使有攻击者的前置伤害增加 2；DJCraft 内置投掷施加 amplifier 2、160 tick。附属 Mod 可
 通过 `ModEffects.REND` 或注册 ID 查询并施加，但这些行为不会为自定义投射物自动生成网络同步。
+`djcraft:mace` family 的右键执行器会把动作物品栈复制到 `djcraft:thrown_mace` 实体用于渲染，
+但不移除或损耗真实物品。投射物初速 1.75、重力 0.07、碰撞箱宽高 0.75 格、最长存在 60 tick，
+服务端同样以完整重锤 AABB 和目标当 tick 位移做连续扫掠，且先用方块命中截断实体线段。基础伤害 16 并应用
+现有节拍类别倍率；首次有效生物命中后为目标当前 Y 速度增加 1.6，无视击退抗性，然后消失。
+它不运行原版重锤坠落猛击、范围伤害或重锤附魔命中逻辑。能量费用仍由物品的
+`use_energy_cost` 决定，原版重锤内置值为 10。
+左键基础窗口为 4 tick；`ModEnchantments.LINGERING_SWEEP` 对应公开资源键
+`djcraft:lingering_sweep`，每级增加 3 tick且运行时不封顶；附魔 JSON 的 `max_level: 2` 只限制
+正常生存获取。附魔 JSON 只允许 `#minecraft:enchantable/mace`，通过命令放到其他
+`djcraft:mace` family 物品上的附魔仍会被服务端读取。
 完整 Schema、非法文件处理、优先级和回退规则见[数据包开发文档](data-pack.md#36-物品动作行为映射)。
 
 trigger-family 物品还可提供

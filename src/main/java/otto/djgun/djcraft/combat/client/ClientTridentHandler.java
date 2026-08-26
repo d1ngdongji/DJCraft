@@ -34,7 +34,7 @@ public final class ClientTridentHandler {
         var proof = DJClientJudgmentProofs.create(resolved.session(), result);
         PacketDistributor.sendToServer(new DJTridentFirePayload(proof, resolved.hand(),
                 resolved.source()));
-        int cooldown = DJItemCooldownManager.getBeatCooldown(resolved.stack());
+        int cooldown = DJItemCooldownManager.getUseBeatCooldown(resolved.stack());
         DJTriggerWeaponHelper.applyBeats(resolved.player(), resolved.stack(), resolved.hand(), resolved.session(),
                 Math.max(0.0, cooldown - 0.4), cooldown, result, true);
     }

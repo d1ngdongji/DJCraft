@@ -36,7 +36,8 @@ public record SyncItemTimingPayload(Map<ResourceLocation, DJItemTimingProfile> p
             int flags = (profile.beatCooldown() != null ? 1 : 0)
                     | (profile.switchWarmup() != null ? 2 : 0)
                     | (profile.attackEnergyCost() != null ? 4 : 0)
-                    | (profile.useEnergyCost() != null ? 8 : 0);
+                    | (profile.useEnergyCost() != null ? 8 : 0)
+                    | (profile.useBeatCooldown() != null ? 16 : 0);
             buffer.writeByte(flags);
             if (profile.beatCooldown() != null) {
                 buffer.writeVarInt(profile.beatCooldown());
@@ -49,6 +50,9 @@ public record SyncItemTimingPayload(Map<ResourceLocation, DJItemTimingProfile> p
             }
             if (profile.useEnergyCost() != null) {
                 buffer.writeDouble(profile.useEnergyCost());
+            }
+            if (profile.useBeatCooldown() != null) {
+                buffer.writeVarInt(profile.useBeatCooldown());
             }
         });
     }
@@ -63,15 +67,16 @@ public record SyncItemTimingPayload(Map<ResourceLocation, DJItemTimingProfile> p
         for (int index = 0; index < size; index++) {
             ResourceLocation itemId = buffer.readResourceLocation();
             int flags = buffer.readUnsignedByte();
-            if (flags < 1 || (flags & ~15) != 0) {
+            if (flags < 1 || (flags & ~31) != 0) {
                 throw new IllegalArgumentException("Invalid item timing flags: " + flags);
             }
             Integer beatCooldown = (flags & 1) != 0 ? buffer.readVarInt() : null;
             Integer switchWarmup = (flags & 2) != 0 ? buffer.readVarInt() : null;
             Double attackEnergyCost = (flags & 4) != 0 ? buffer.readDouble() : null;
             Double useEnergyCost = (flags & 8) != 0 ? buffer.readDouble() : null;
+            Integer useBeatCooldown = (flags & 16) != 0 ? buffer.readVarInt() : null;
             DJItemTimingProfile profile = new DJItemTimingProfile(
-                    beatCooldown, switchWarmup, attackEnergyCost, useEnergyCost);
+                    beatCooldown, useBeatCooldown, switchWarmup, attackEnergyCost, useEnergyCost);
             if (profiles.put(itemId, profile) != null) {
                 throw new IllegalArgumentException("Duplicate item timing profile: " + itemId);
             }

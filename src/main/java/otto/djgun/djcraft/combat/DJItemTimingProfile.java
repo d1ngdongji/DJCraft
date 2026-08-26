@@ -9,19 +9,24 @@ import java.util.Set;
 
 public record DJItemTimingProfile(
         Integer beatCooldown,
+        Integer useBeatCooldown,
         Integer switchWarmup,
         Double attackEnergyCost,
         Double useEnergyCost) {
     private static final Set<String> ALLOWED_FIELDS = Set.of(
-            "beat_cooldown", "switch_warmup", "attack_energy_cost", "use_energy_cost");
+            "beat_cooldown", "use_beat_cooldown", "switch_warmup",
+            "attack_energy_cost", "use_energy_cost");
 
     public DJItemTimingProfile {
-        if (beatCooldown == null && switchWarmup == null
+        if (beatCooldown == null && useBeatCooldown == null && switchWarmup == null
                 && attackEnergyCost == null && useEnergyCost == null) {
             throw new IllegalArgumentException("At least one item profile field is required");
         }
         if (beatCooldown != null && beatCooldown < 0) {
             throw new IllegalArgumentException("beat_cooldown must be non-negative");
+        }
+        if (useBeatCooldown != null && useBeatCooldown < 0) {
+            throw new IllegalArgumentException("use_beat_cooldown must be non-negative");
         }
         if (switchWarmup != null && switchWarmup < 0) {
             throw new IllegalArgumentException("switch_warmup must be non-negative");
@@ -31,7 +36,12 @@ public record DJItemTimingProfile(
     }
 
     public DJItemTimingProfile(Integer beatCooldown, Integer switchWarmup) {
-        this(beatCooldown, switchWarmup, null, null);
+        this(beatCooldown, null, switchWarmup, null, null);
+    }
+
+    public DJItemTimingProfile(Integer beatCooldown, Integer switchWarmup,
+            Double attackEnergyCost, Double useEnergyCost) {
+        this(beatCooldown, null, switchWarmup, attackEnergyCost, useEnergyCost);
     }
 
     public static DJItemTimingProfile parse(JsonElement element) {
@@ -47,14 +57,20 @@ public record DJItemTimingProfile(
         }
 
         Integer beatCooldown = readNonNegativeInteger(object, "beat_cooldown");
+        Integer useBeatCooldown = readNonNegativeInteger(object, "use_beat_cooldown");
         Integer switchWarmup = readNonNegativeInteger(object, "switch_warmup");
         Double attackEnergyCost = readNonNegativeDouble(object, "attack_energy_cost");
         Double useEnergyCost = readNonNegativeDouble(object, "use_energy_cost");
-        return new DJItemTimingProfile(beatCooldown, switchWarmup, attackEnergyCost, useEnergyCost);
+        return new DJItemTimingProfile(beatCooldown, useBeatCooldown, switchWarmup,
+                attackEnergyCost, useEnergyCost);
     }
 
     public int resolveBeatCooldown(int calculatedFallback) {
         return beatCooldown != null ? beatCooldown : calculatedFallback;
+    }
+
+    public int resolveUseBeatCooldown(int resolvedBeatCooldown) {
+        return useBeatCooldown != null ? useBeatCooldown : resolvedBeatCooldown;
     }
 
     public int resolveSwitchWarmup(int resolvedBeatCooldown) {

@@ -75,6 +75,7 @@ public final class DJClientNetworkHandler {
                 payload.sessionId(), payload.trackId(), payload.discId(), payload.initialPositionMs(),
                 payload.estimatedTransitMs());
         if (started) {
+            DJTrackToast.show(payload.trackId());
             if (cyberGrindPlayback) {
                 // The server-owned arena sequencer advances the playlist.
             } else if (payload.groupId() == null) {

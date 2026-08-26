@@ -3,6 +3,7 @@ package otto.djgun.djcraft;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -43,9 +44,10 @@ import otto.djgun.djcraft.util.DJClientUiBridge;
 @Mod(value = DJCraft.MODID, dist = Dist.CLIENT)
 public class DJCraftClient {
 
-    public DJCraftClient(ModContainer container) {
+    public DJCraftClient(IEventBus modEventBus, ModContainer container) {
         DJClientUiBridge.install(DJModernUiHandler.INSTANCE);
         container.registerConfig(ModConfig.Type.CLIENT, DJClientConfig.SPEC);
+        modEventBus.addListener(otto.djgun.djcraft.client.render.DJEntityRenderers::register);
 
         // 注册配置界面
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
@@ -66,6 +68,9 @@ public class DJCraftClient {
 
         // 注册客户端三叉戟 DJ 集成处理器（按下右键立即判定并投掷）
         NeoForge.EVENT_BUS.register(otto.djgun.djcraft.combat.client.ClientTridentHandler.class);
+
+        // 注册客户端重锤 DJ 集成处理器（按下右键立即判定并投掷副本）
+        NeoForge.EVENT_BUS.register(otto.djgun.djcraft.combat.client.ClientMaceHandler.class);
 
         // 注册客户端盾牌 DJ 集成处理器
         NeoForge.EVENT_BUS.register(otto.djgun.djcraft.combat.client.ClientShieldHandler.class);
@@ -247,12 +252,7 @@ public class DJCraftClient {
                         (stack, level, entity, seed) -> {
                             String packId = stack.get(otto.djgun.djcraft.init.ModDataComponents.TRACK_PACK_ID.get());
                             var manager = otto.djgun.djcraft.loader.TrackPackManager.getInstance();
-                            java.util.List<String> packIds = manager.getLoadedPacks().stream()
-                                    .map(otto.djgun.djcraft.data.TrackPack::id)
-                                    .toList();
-                            return otto.djgun.djcraft.sound.TrackPackDiscModelIndex.resolve(
-                                    packId, packIds, id -> manager.hasFile(id, "disc.png")
-                                            || manager.hasFile(id, "perfect_disc.png"));
+                            return manager.getDiscModelIndex(packId);
                         });
                 net.minecraft.client.renderer.item.ItemProperties.register(
                         otto.djgun.djcraft.init.ModItems.EMPTY_DISC.get(),
@@ -263,8 +263,7 @@ public class DJCraftClient {
                                     otto.djgun.djcraft.init.ModDataComponents.DISC_STATISTICS.get(),
                                     otto.djgun.djcraft.data.DiscStatistics.EMPTY);
                             int beats = otto.djgun.djcraft.loader.TrackPackManager.getInstance()
-                                    .getTrackPack(packId == null ? "" : packId)
-                                    .map(otto.djgun.djcraft.data.TrackPack::getCombatBeatCount).orElse(0);
+                                    .getCombatBeatCount(packId);
                             return statistics.isGilded(beats) ? 1.0f : 0.0f;
                         });
                 net.minecraft.client.renderer.item.ItemProperties.register(
@@ -274,6 +273,11 @@ public class DJCraftClient {
                                 net.minecraft.world.item.CrossbowItem.isCharged(stack) ? 1.0f : 0.0f);
                 net.minecraft.client.renderer.item.ItemProperties.register(
                         otto.djgun.djcraft.init.ModItems.MAGIC_CROSSBOW.get(),
+                        net.minecraft.resources.ResourceLocation.withDefaultNamespace("charged"),
+                        (stack, level, entity, seed) ->
+                                net.minecraft.world.item.CrossbowItem.isCharged(stack) ? 1.0f : 0.0f);
+                net.minecraft.client.renderer.item.ItemProperties.register(
+                        otto.djgun.djcraft.init.ModItems.ASSAULT_CROSSBOW.get(),
                         net.minecraft.resources.ResourceLocation.withDefaultNamespace("charged"),
                         (stack, level, entity, seed) ->
                                 net.minecraft.world.item.CrossbowItem.isCharged(stack) ? 1.0f : 0.0f);

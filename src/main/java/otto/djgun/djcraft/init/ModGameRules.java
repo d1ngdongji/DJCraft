@@ -4,7 +4,7 @@ import net.minecraft.world.level.GameRules;
 
 /** World-persistent server authority for DJ combat tuning. */
 public final class ModGameRules {
-    public static final int DEFAULT_OFF_BEAT_ATTACK_DAMAGE_PERCENT = 0;
+    public static final int DEFAULT_OFF_BEAT_ATTACK_DAMAGE_PERCENT = 50;
     public static final int DEFAULT_BASE_MAX_TOLERANCE_CHANCES = 2;
     public static final int DEFAULT_IDLE_ATTACKABLE_BEATS_BEFORE_COMBO_RESET = 5;
 

@@ -1,0 +1,11 @@
+{
+  "fallback": "djcraft:generic",
+  "events": {
+    "trigger_impact": [
+      { "when": { "beat": "hit" }, "sounds": [{ "event": "djcraft:weapon.assault_crossbow_shoot" }] }
+    ],
+    "target_hit": [
+      { "when": { "target": "hit" }, "sounds": [{ "event": "djcraft:weapon.ray_hit" }] }
+    ]
+  }
+}

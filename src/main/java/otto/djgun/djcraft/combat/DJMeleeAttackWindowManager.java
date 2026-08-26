@@ -31,12 +31,15 @@ import otto.djgun.djcraft.api.combat.DJSoftTargetMeleeBehavior;
 import otto.djgun.djcraft.combat.access.PlayerAttackStrengthAccess;
 import otto.djgun.djcraft.combat.access.DJThrownTridentExtension;
 import otto.djgun.djcraft.network.packet.StopReason;
+import otto.djgun.djcraft.init.ModEnchantments;
 import otto.djgun.djcraft.session.DJModeManager;
 import otto.djgun.djcraft.session.DJSession;
 
-/** Server-authoritative two-tick movement sweep for every authorized DJ melee attack. */
+/** Server-authoritative movement sweep for every authorized DJ melee attack. */
 public final class DJMeleeAttackWindowManager {
     public static final long WINDOW_TICKS = 2L;
+    public static final long MACE_WINDOW_TICKS = WINDOW_TICKS * 2L;
+    public static final long MACE_WINDOW_TICKS_PER_ENCHANTMENT_LEVEL = 3L;
     private static final double MAX_CONTINUOUS_MOVEMENT_SQR = 16.0 * 16.0;
     private static final Map<UUID, List<ActiveWindow>> ACTIVE = new HashMap<>();
 
@@ -51,8 +54,13 @@ public final class DJMeleeAttackWindowManager {
         player.resetAttackStrengthTicker();
         player.swing(InteractionHand.MAIN_HAND, true);
 
+        DJItemBehavior family = DJItemBehaviorManager.resolve(action.stackSnapshot());
+        int lingeringSweepLevel = family == DJItemBehavior.MACE
+                ? ModEnchantments.level(player.level().registryAccess(), action.stackSnapshot(),
+                        ModEnchantments.LINGERING_SWEEP)
+                : 0;
         ActiveWindow window = new ActiveWindow(player.level().dimension(),
-                player.level().getGameTime() + WINDOW_TICKS, eye, look, action,
+                player.level().getGameTime() + windowTicks(family, lingeringSweepLevel), eye, look, action,
                 behavior, attackStrengthTicks,
                 behavior instanceof DJAreaMeleeBehavior area
                         && area.resetFallDistanceAfterContact() && MaceItem.canSmashAttack(player));
@@ -62,6 +70,14 @@ public final class DJMeleeAttackWindowManager {
         } else {
             ACTIVE.computeIfAbsent(player.getUUID(), ignored -> new ArrayList<>()).add(window);
         }
+    }
+
+    static long windowTicks(DJItemBehavior family, int lingeringSweepLevel) {
+        if (family != DJItemBehavior.MACE) {
+            return WINDOW_TICKS;
+        }
+        int level = Math.max(0, lingeringSweepLevel);
+        return MACE_WINDOW_TICKS + level * MACE_WINDOW_TICKS_PER_ENCHANTMENT_LEVEL;
     }
 
     public static void tick(MinecraftServer server) {

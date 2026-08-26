@@ -14,7 +14,7 @@ class SyncItemTimingPayloadTest {
     @Test
     void roundTripsProfilesWithOptionalFields() {
         SyncItemTimingPayload expected = new SyncItemTimingPayload(Map.of(
-                ResourceLocation.parse("minecraft:bow"), new DJItemTimingProfile(2, 0, null, 4.5),
+                ResourceLocation.parse("minecraft:bow"), new DJItemTimingProfile(2, 1, 0, null, 4.5),
                 ResourceLocation.parse("example:weapon"), new DJItemTimingProfile(null, 3, 2.25, null)));
         FriendlyByteBuf buffer = new FriendlyByteBuf(Unpooled.buffer());
         try {

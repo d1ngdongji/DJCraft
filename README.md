@@ -1,4 +1,10 @@
-# DJCraft
+<p align="center">
+  <img src=".github/assets/djcraft-title.png" alt="DJCraft: Rhythm Combat Mod" width="768">
+</p>
+
+<p align="center">
+  <strong>简体中文</strong> | <a href="README_EN.md">English</a>
+</p>
 
 > 让音乐成为战斗节奏的 Minecraft 模组。
 
@@ -29,6 +35,7 @@ DJCraft 会让原版近战、弓、弩、三叉戟、重锤和盾牌融入节拍
 
 - **激光弩**：发射可贯穿多个目标的远程射线。
 - **魔法弩**：以更高单体伤害命中首个目标。
+- **冲锋弩**：发射低耗能单体射线，并可消耗药箭传递药水效果。
 - **爆炸弓**：自动蓄力并在命中处制造不破坏地形的范围爆炸。
 - **盾牌招架**：在合适时机举盾可以化解伤害，并获得连击与能量奖励。
 

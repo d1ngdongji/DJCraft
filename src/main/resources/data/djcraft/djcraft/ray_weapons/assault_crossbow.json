@@ -1,0 +1,8 @@
+{
+  "range": 96.0,
+  "base_damage": 7.0,
+  "pierce_entities": false,
+  "effect": "djcraft:assault_crossbow",
+  "horizontal_aim_assist_percent": 7.0,
+  "vertical_aim_assist_percent": 7.0
+}

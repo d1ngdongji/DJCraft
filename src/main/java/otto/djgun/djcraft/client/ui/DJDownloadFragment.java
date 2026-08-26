@@ -31,9 +31,18 @@ public final class DJDownloadFragment extends Fragment {
     private final Runnable progressRefresh = new Runnable() {
         @Override
         public void run() {
-            refreshProgress();
-            if (progressText != null) {
-                progressText.postDelayed(this, 200L);
+            TextView currentProgressText = progressText;
+            FrameLayout currentProgressTrack = progressTrack;
+            View currentProgressFill = progressFill;
+            Button currentPauseButton = pauseButton;
+            if (currentProgressText == null || currentProgressTrack == null
+                    || currentProgressFill == null || currentPauseButton == null) {
+                return;
+            }
+            refreshProgress(currentProgressText, currentProgressTrack,
+                    currentProgressFill, currentPauseButton);
+            if (progressText == currentProgressText) {
+                currentProgressText.postDelayed(this, 200L);
             }
         }
     };
@@ -129,12 +138,16 @@ public final class DJDownloadFragment extends Fragment {
     }
 
     @Override
-    public void onDetach() {
-        if (progressText != null) {
-            progressText.removeCallbacks(progressRefresh);
-            progressText = null;
+    public void onDestroyView() {
+        TextView detachedProgressText = progressText;
+        progressText = null;
+        progressTrack = null;
+        progressFill = null;
+        pauseButton = null;
+        if (detachedProgressText != null) {
+            detachedProgressText.removeCallbacks(progressRefresh);
         }
-        super.onDetach();
+        super.onDestroyView();
     }
 
     private View createPackRow(Context context, String packId) {
@@ -176,21 +189,22 @@ public final class DJDownloadFragment extends Fragment {
         return row;
     }
 
-    private void refreshProgress() {
+    private void refreshProgress(TextView currentProgressText, FrameLayout currentProgressTrack,
+            View currentProgressFill, Button currentPauseButton) {
         var snapshot = ClientTrackPackTransferService.snapshot();
-        pauseButton.setEnabled(snapshot.active());
-        pauseButton.setText(DJUiTheme.text(snapshot.paused()
+        currentPauseButton.setEnabled(snapshot.active());
+        currentPauseButton.setText(DJUiTheme.text(snapshot.paused()
                 ? "ui.djcraft.download.resume" : "ui.djcraft.download.pause"));
         double fraction = snapshot.fraction();
-        int width = progressTrack.getWidth();
-        ViewGroup.LayoutParams params = progressFill.getLayoutParams();
+        int width = currentProgressTrack.getWidth();
+        ViewGroup.LayoutParams params = currentProgressFill.getLayoutParams();
         params.width = (int) Math.round(width * fraction);
-        progressFill.setLayoutParams(params);
+        currentProgressFill.setLayoutParams(params);
         if (!snapshot.active()) {
-            progressText.setText(DJUiTheme.text("ui.djcraft.download.idle"));
+            currentProgressText.setText(DJUiTheme.text("ui.djcraft.download.idle"));
             return;
         }
-        progressText.setText(DJUiTheme.text("ui.djcraft.download.progress",
+        currentProgressText.setText(DJUiTheme.text("ui.djcraft.download.progress",
                 snapshot.packId(), String.format(Locale.ROOT, "%.1f", fraction * 100.0),
                 formatBytes(snapshot.receivedBytes()), formatBytes(snapshot.totalBytes()),
                 formatBytes(snapshot.bytesPerSecond()) + "/s"));

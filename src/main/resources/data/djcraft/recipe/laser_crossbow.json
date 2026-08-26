@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "combat",
+  "pattern": [
+    "OBO",
+    "NCN",
+    "ODO"
+  ],
+  "key": {
+    "O": {
+      "item": "minecraft:observer"
+    },
+    "B": {
+      "item": "minecraft:beacon"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "C": {
+      "item": "minecraft:crossbow"
+    },
+    "D": {
+      "item": "minecraft:diamond_block"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "djcraft:laser_crossbow"
+  }
+}

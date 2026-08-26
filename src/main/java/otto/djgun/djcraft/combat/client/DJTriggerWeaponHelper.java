@@ -31,7 +31,7 @@ import java.util.function.Consumer;
  * </ul>
  *
  * <p>
- * 冷却时长从 {@link DJItemCooldownManager#getBeatCooldown(ItemStack)} 读取，
+ * 冷却时长从 {@link DJItemCooldownManager#getUseBeatCooldown(ItemStack)} 读取，
  * 支持通过服务端同步的数据包 Profile 覆盖（内置弩 Profile 为 4 拍）。
  *
  * <p>
@@ -90,12 +90,12 @@ public final class DJTriggerWeaponHelper {
     }
 
     /**
-     * 根据 {@link DJItemCooldownManager#getBeatCooldown(ItemStack)} 施加客户端冷却。
+     * 根据 {@link DJItemCooldownManager#getUseBeatCooldown(ItemStack)} 施加客户端冷却。
      * 采用 -0.4 拍宽容逻辑，与近战武器保持一致。
      */
     public static void applyCooldown(Player player, ItemStack stack, InteractionHand hand, DJSessionClient session,
             HitResult result) {
-        int beats = DJItemCooldownManager.getBeatCooldown(stack);
+        int beats = DJItemCooldownManager.getUseBeatCooldown(stack);
         applyBeats(player, stack, hand, session, beats - 0.4, beats, result, true);
     }
 

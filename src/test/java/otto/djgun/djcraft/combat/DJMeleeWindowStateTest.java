@@ -1,11 +1,24 @@
 package otto.djgun.djcraft.combat;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 class DJMeleeWindowStateTest {
+    @Test
+    void lingeringSweepAddsThreeTicksPerLevelToMaceWindow() {
+        assertEquals(DJMeleeAttackWindowManager.WINDOW_TICKS * 2L,
+                DJMeleeAttackWindowManager.windowTicks(DJItemBehavior.MACE, 0));
+        assertEquals(7L, DJMeleeAttackWindowManager.windowTicks(DJItemBehavior.MACE, 1));
+        assertEquals(10L, DJMeleeAttackWindowManager.windowTicks(DJItemBehavior.MACE, 2));
+        assertEquals(13L, DJMeleeAttackWindowManager.windowTicks(DJItemBehavior.MACE, 3));
+        assertEquals(4L, DJMeleeAttackWindowManager.windowTicks(DJItemBehavior.MACE, -1));
+        assertEquals(DJMeleeAttackWindowManager.WINDOW_TICKS,
+                DJMeleeAttackWindowManager.windowTicks(DJItemBehavior.TRIDENT, 2));
+    }
+
     @Test
     void ordinaryWindowClosesOnItsFirstContact() {
         DJMeleeWindowState state = new DJMeleeWindowState(false, 12L);

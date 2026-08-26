@@ -1,0 +1,11 @@
+{
+  "anvil_cost": 4,
+  "description": { "translate": "enchantment.djcraft.lingering_sweep" },
+  "effects": {},
+  "max_cost": { "base": 30, "per_level_above_first": 10 },
+  "max_level": 2,
+  "min_cost": { "base": 10, "per_level_above_first": 10 },
+  "slots": [ "mainhand" ],
+  "supported_items": "#minecraft:enchantable/mace",
+  "weight": 5
+}

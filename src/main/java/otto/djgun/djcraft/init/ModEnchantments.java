@@ -12,6 +12,7 @@ public final class ModEnchantments {
     public static final ResourceKey<Enchantment> AERIAL_STEP = key("aerial_step");
     public static final ResourceKey<Enchantment> RENDING = key("rending");
     public static final ResourceKey<Enchantment> RAY_OVERCHARGE = key("ray_overcharge");
+    public static final ResourceKey<Enchantment> LINGERING_SWEEP = key("lingering_sweep");
 
     private ModEnchantments() {
     }

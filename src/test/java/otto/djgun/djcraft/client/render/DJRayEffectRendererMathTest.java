@@ -71,4 +71,12 @@ class DJRayEffectRendererMathTest {
         float half = DJRayEffectRenderer.shockwaveRadius(0.25F, 4.0F, 0.5F);
         assertEquals(true, quarter > 0.25F && half > quarter && half < 4.0F);
     }
+
+    @Test
+    void animatedBeamStartsThinExpandsAndContractsToZero() {
+        assertEquals(0.25F, DJRayEffectRenderer.beamWidthScale(0.25F, 2.25F, 0.0F), 1.0E-6F);
+        assertEquals(2.25F, DJRayEffectRenderer.beamWidthScale(0.25F, 2.25F, 0.5F), 1.0E-6F);
+        assertEquals(0.0F, DJRayEffectRenderer.beamWidthScale(0.25F, 2.25F, 1.0F), 1.0E-6F);
+        assertEquals(1.0F, DJRayEffectRenderer.beamWidthScale(1.0F, 0.0F, 0.5F), 1.0E-6F);
+    }
 }

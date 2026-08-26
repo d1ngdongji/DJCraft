@@ -3,11 +3,13 @@ package otto.djgun.djcraft.loader;
 import otto.djgun.djcraft.DJCraft;
 import otto.djgun.djcraft.Config;
 import otto.djgun.djcraft.data.TrackPack;
+import otto.djgun.djcraft.sound.TrackPackDiscModelIndex;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
@@ -15,6 +17,8 @@ import java.security.MessageDigest;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * 曲目包管理器
@@ -32,6 +36,10 @@ public class TrackPackManager {
     public record ArchiveAudioSource(Path archivePath, String entryName) {
     }
 
+    /** Read-only archive stored inside the mod JAR; it is never offered for download. */
+    public record BundledArchiveAudioSource(Path archivePath, String entryName) {
+    }
+
     // -------------------------------------------------------
 
     private static TrackPackManager INSTANCE;
@@ -43,6 +51,9 @@ public class TrackPackManager {
     private final Map<String, String> archiveHashes = new ConcurrentHashMap<>();
     /** packId -> 音频来源（DirAudioSource 或 ArchiveAudioSource） */
     private final Map<String, Object> audioSources = new ConcurrentHashMap<>();
+    /** Immutable lookup used by item predicates; rebuilt only when the pack registry changes. */
+    private volatile Map<String, Float> discModelIndexes = Map.of();
+    private volatile Map<String, Integer> combatBeatCounts = Map.of();
     /** ZipFS caches file systems by URI, so an archive may only be opened by one thread at a time. */
     private final Object archiveFileSystemLock = new Object();
     private Path trackpacksDir;
@@ -103,6 +114,7 @@ public class TrackPackManager {
         loadBundledPacks();
         if (trackpacksDir == null || !Files.exists(trackpacksDir)) {
             DJCraft.LOGGER.warn("TrackPacks directory does not exist");
+            rebuildItemRenderMetadata();
             DJCraft.LOGGER.info("Loaded {} TrackPack(s)", loadedPacks.size());
             return;
         }
@@ -118,6 +130,7 @@ public class TrackPackManager {
             DJCraft.LOGGER.error("Failed to scan trackpacks directory", e);
         }
 
+        rebuildItemRenderMetadata();
         DJCraft.LOGGER.info("Loaded {} TrackPack(s)", loadedPacks.size());
     }
 
@@ -128,10 +141,68 @@ public class TrackPackManager {
         }
         DJCraft.LOGGER.info("Scanning for bundled TrackPacks in: {}", bundledTrackpacksDir);
         try (Stream<Path> paths = Files.list(bundledTrackpacksDir)) {
-            paths.filter(Files::isDirectory).sorted()
+            List<Path> allPaths = paths.sorted().toList();
+            allPaths.stream().filter(TrackPackManager::isDjcraftFile)
+                    .forEach(this::loadPackFromBundledArchive);
+            allPaths.stream().filter(Files::isDirectory)
                     .forEach(path -> loadPackFromDirectory(path, "bundled directory"));
         } catch (IOException e) {
             DJCraft.LOGGER.error("Failed to scan bundled TrackPacks directory", e);
+        }
+    }
+
+    private void loadPackFromBundledArchive(Path archivePath) {
+        String fileName = archivePath.getFileName().toString();
+        String packId = fileName.substring(0, fileName.length() - ".djcraft".length())
+                .toLowerCase(Locale.ROOT);
+        if (!TrackPackIdValidator.isValid(packId)) {
+            DJCraft.LOGGER.error("Invalid bundled TrackPack ID derived from archive: {}", packId);
+            return;
+        }
+
+        long maxBytes = Config.maxTrackPackBytes();
+        try {
+            if (!TrackPackArchiveValidator.validate(archivePath, maxBytes)) {
+                DJCraft.LOGGER.error("Bundled TrackPack archive failed safety validation: {}", archivePath);
+                return;
+            }
+            Map<String, byte[]> entries = readArchiveEntries(archivePath, maxBytes);
+            byte[] jsonBytes = entries.get("track.json");
+            TrackPack pack;
+            try (Reader reader = new InputStreamReader(new ByteArrayInputStream(jsonBytes), StandardCharsets.UTF_8)) {
+                pack = TrackPackLoader.loadFromReader(packId, reader);
+            }
+            if (pack == null) {
+                return;
+            }
+
+            String soundFile = pack.meta().soundFile();
+            if (soundFile == null || soundFile.isEmpty()) {
+                soundFile = "track.ogg";
+            }
+            if (!isSafeRelativePath(soundFile)) {
+                DJCraft.LOGGER.error("Bundled TrackPack {} contains an unsafe sound path: {}", packId, soundFile);
+                return;
+            }
+            byte[] audio = entries.get(soundFile);
+            if (audio == null || !TrackPackAudioValidator.isPlayableOggVorbis(new ByteArrayInputStream(audio))) {
+                DJCraft.LOGGER.error("Bundled TrackPack {} audio is missing or not supported: {}", packId, soundFile);
+                return;
+            }
+
+            String definitionHash = computeSha256(jsonBytes);
+            String contentHash = computeCanonicalContentHash(entries);
+            if (definitionHash == null || contentHash == null) {
+                return;
+            }
+            loadedPacks.put(packId, pack);
+            packHashes.put(packId, definitionHash);
+            contentHashes.put(packId, contentHash);
+            audioSources.put(packId, new BundledArchiveAudioSource(archivePath, soundFile));
+            DJCraft.LOGGER.info("Loaded bundled TrackPack archive: {} (BPM: {}, Beats: {}, Hash: {})",
+                    packId, pack.getBpm(), pack.getCombatBeatCount(), definitionHash.substring(0, 8));
+        } catch (IOException | RuntimeException exception) {
+            DJCraft.LOGGER.error("Failed to read bundled TrackPack archive: {}", archivePath, exception);
         }
     }
 
@@ -364,6 +435,10 @@ public class TrackPackManager {
         TrackPackManager staged = new TrackPackManager();
         staged.trackpacksDir = trackpacksDir;
         staged.bundledTrackpacksDir = bundledTrackpacksDir;
+        Path bundledArchive = staged.findArchive(bundledTrackpacksDir, packId).orElse(null);
+        if (bundledArchive != null) {
+            staged.loadPackFromBundledArchive(bundledArchive);
+        }
         Path bundledPackDir = bundledTrackpacksDir == null
                 ? null : bundledTrackpacksDir.resolve(packId).normalize();
         if (bundledPackDir != null && bundledPackDir.startsWith(bundledTrackpacksDir.normalize())
@@ -395,6 +470,7 @@ public class TrackPackManager {
             contentHashes.remove(prepared.packId);
             archiveHashes.remove(prepared.packId);
             audioSources.remove(prepared.packId);
+            rebuildItemRenderMetadata();
             return false;
         }
 
@@ -411,11 +487,41 @@ public class TrackPackManager {
         } else {
             archiveHashes.put(prepared.packId, prepared.archiveHash);
         }
+        rebuildItemRenderMetadata();
         return true;
     }
 
+    private void rebuildItemRenderMetadata() {
+        Set<String> packIds = Set.copyOf(loadedPacks.keySet());
+        discModelIndexes = TrackPackDiscModelIndex.build(packIds,
+                id -> hasFile(id, "disc.png") || hasFile(id, "perfect_disc.png"));
+
+        Map<String, Integer> beatCounts = new HashMap<>();
+        for (Map.Entry<String, TrackPack> entry : loadedPacks.entrySet()) {
+            beatCounts.put(entry.getKey(), entry.getValue().getCombatBeatCount());
+        }
+        combatBeatCounts = Map.copyOf(beatCounts);
+    }
+
+    /** Constant-time model predicate lookup; never touches the filesystem. */
+    public float getDiscModelIndex(String packId) {
+        return TrackPackDiscModelIndex.resolve(packId, discModelIndexes);
+    }
+
+    /** Constant-time gilded predicate lookup; never walks a TrackPack timeline. */
+    public int getCombatBeatCount(String packId) {
+        return packId == null ? 0 : combatBeatCounts.getOrDefault(packId, 0);
+    }
+
     private Optional<Path> findArchive(String packId) {
-        try (Stream<Path> paths = Files.list(trackpacksDir)) {
+        return findArchive(trackpacksDir, packId);
+    }
+
+    private Optional<Path> findArchive(Path root, String packId) {
+        if (root == null || !Files.isDirectory(root)) {
+            return Optional.empty();
+        }
+        try (Stream<Path> paths = Files.list(root)) {
             return paths.filter(TrackPackManager::isDjcraftFile)
                     .filter(path -> path.getFileName().toString()
                             .equalsIgnoreCase(packId + ".djcraft"))
@@ -440,6 +546,7 @@ public class TrackPackManager {
         if (source instanceof ArchiveAudioSource arc) {
             return Optional.of(arc.archivePath());
         }
+
         return Optional.empty();
     }
 
@@ -496,6 +603,16 @@ public class TrackPackManager {
             }
         }
 
+        if (source instanceof BundledArchiveAudioSource arc) {
+            byte[] bytes = readArchiveEntry(arc.archivePath(), arc.entryName());
+            if (bytes == null) {
+                DJCraft.LOGGER.warn("Audio entry '{}' not found in bundled archive: {}",
+                        arc.entryName(), arc.archivePath());
+                return null;
+            }
+            return new ByteArrayInputStream(bytes);
+        }
+
         DJCraft.LOGGER.error("Unknown audio source type for pack: {}", packId);
         return null;
     }
@@ -529,6 +646,13 @@ public class TrackPackManager {
                 } catch (IOException e) {
                     return false;
                 }
+            }
+        }
+        if (source instanceof BundledArchiveAudioSource arc) {
+            try {
+                return readArchiveEntry(arc.archivePath(), fileName) != null;
+            } catch (IOException exception) {
+                return false;
             }
         }
         return false;
@@ -571,6 +695,10 @@ public class TrackPackManager {
                 }
             }
         }
+        if (source instanceof BundledArchiveAudioSource arc) {
+            byte[] bytes = readArchiveEntry(arc.archivePath(), fileName);
+            return bytes == null ? null : new ByteArrayInputStream(bytes);
+        }
         return null;
     }
 
@@ -612,6 +740,9 @@ public class TrackPackManager {
                 synchronized (archiveFileSystemLock) {
                     return listArchiveFiles(arc.archivePath(), prefix);
                 }
+            }
+            if (source instanceof BundledArchiveAudioSource arc) {
+                return listStreamedArchiveFiles(arc.archivePath(), prefix);
             }
         } catch (IOException | RuntimeException exception) {
             DJCraft.LOGGER.error("Failed to list TrackPack files for {} below {}", packId, prefix, exception);
@@ -693,6 +824,75 @@ public class TrackPackManager {
             return toHex(digest.digest());
         } catch (Exception exception) {
             DJCraft.LOGGER.error("Failed to compute canonical TrackPack hash for {}", root, exception);
+            return null;
+        }
+    }
+
+    private static Map<String, byte[]> readArchiveEntries(Path archive, long maxBytes) throws IOException {
+        Map<String, byte[]> entries = new TreeMap<>();
+        long totalBytes = 0;
+        try (InputStream input = Files.newInputStream(archive); ZipInputStream zip = new ZipInputStream(input)) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                if (!entry.isDirectory()) {
+                    byte[] bytes = zip.readAllBytes();
+                    totalBytes += bytes.length;
+                    if (totalBytes > maxBytes || entries.putIfAbsent(entry.getName(), bytes) != null) {
+                        throw new IOException("Bundled TrackPack archive exceeds its limit or has duplicate entries");
+                    }
+                }
+                zip.closeEntry();
+            }
+        }
+        return entries;
+    }
+
+    private static byte[] readArchiveEntry(Path archive, String entryName) throws IOException {
+        try (InputStream input = Files.newInputStream(archive); ZipInputStream zip = new ZipInputStream(input)) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                if (!entry.isDirectory() && entryName.equals(entry.getName())) {
+                    return zip.readAllBytes();
+                }
+                zip.closeEntry();
+            }
+        }
+        return null;
+    }
+
+    private static Set<String> listStreamedArchiveFiles(Path archive, String prefix) throws IOException {
+        Set<String> files = new TreeSet<>();
+        try (InputStream input = Files.newInputStream(archive); ZipInputStream zip = new ZipInputStream(input)) {
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                if (!entry.isDirectory() && entry.getName().startsWith(prefix)) {
+                    files.add(entry.getName());
+                }
+                zip.closeEntry();
+            }
+        }
+        return Set.copyOf(files);
+    }
+
+    private static String computeCanonicalContentHash(Map<String, byte[]> entries) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
+                byte[] name = entry.getKey().getBytes(StandardCharsets.UTF_8);
+                digest.update((byte) (name.length >>> 24));
+                digest.update((byte) (name.length >>> 16));
+                digest.update((byte) (name.length >>> 8));
+                digest.update((byte) name.length);
+                digest.update(name);
+                long size = entry.getValue().length;
+                for (int shift = 56; shift >= 0; shift -= 8) {
+                    digest.update((byte) (size >>> shift));
+                }
+                digest.update(entry.getValue());
+            }
+            return toHex(digest.digest());
+        } catch (Exception exception) {
+            DJCraft.LOGGER.error("Failed to compute canonical bundled TrackPack hash", exception);
             return null;
         }
     }

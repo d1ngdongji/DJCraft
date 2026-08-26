@@ -41,7 +41,8 @@ class DJRayEffectResourceTest {
                         name + " default value count");
             });
             assertTrue(uniforms.containsAll(Set.of(
-                    "ModelViewMat", "ProjMat", "ColorModulator", "EffectMode", "Progress", "Time")));
+                    "ModelViewMat", "ProjMat", "ColorModulator", "EffectMode", "Progress", "Time",
+                    "BeamFadeFromNear", "BeamWidthAnimated")));
         }
     }
 
@@ -54,7 +55,9 @@ class DJRayEffectResourceTest {
                     new InputStreamReader(input, StandardCharsets.UTF_8)));
             assertEquals(0.035F, profile.coreWidth());
             assertEquals(0.11F, profile.haloWidth());
-            assertEquals(180L, profile.beamLifetimeMs());
+            assertEquals(360L, profile.beamLifetimeMs());
+            assertEquals(0.25F, profile.beamWidthStartScale());
+            assertEquals(2.25F, profile.beamWidthPeakScale());
             assertEquals(240L, profile.burstLifetimeMs());
             assertEquals(0.12F, profile.burstStartRadius());
             assertEquals(0.75F, profile.burstEndRadius());
@@ -82,6 +85,23 @@ class DJRayEffectResourceTest {
             assertTrue(profile.muzzleBurstScale() < profile.contactBurstScale());
             assertTrue(profile.endBurstScale() < profile.contactBurstScale());
         }
+    }
+
+    @Test
+    void assaultCrossbowUsesAThinFadingGrayTracerWithoutBursts() throws Exception {
+        DJRayEffectProfile profile = parse("assault_crossbow");
+        assertEquals(600L, profile.beamLifetimeMs());
+        assertTrue(profile.beamFadeFromNear());
+        assertTrue(profile.coreWidth() < 0.02F);
+        assertTrue(profile.haloWidth() < 0.06F);
+        assertTrue(profile.coreColor() >>> 24 >= 0xF0);
+        assertTrue(profile.haloColor() >>> 24 >= 0xA0);
+        assertEquals(0.0F, profile.muzzleBurstScale());
+        assertEquals(0.0F, profile.contactBurstScale());
+        assertEquals(0.0F, profile.endBurstScale());
+        int core = profile.coreColor();
+        assertEquals(core >>> 16 & 0xFF, core >>> 8 & 0xFF);
+        assertEquals(core >>> 8 & 0xFF, core & 0xFF);
     }
 
     @Test

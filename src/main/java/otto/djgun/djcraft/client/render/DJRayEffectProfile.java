@@ -11,13 +11,16 @@ import net.minecraft.world.phys.Vec3;
 
 /** Resource-driven visual tuning for reusable ray effects. */
 public record DJRayEffectProfile(int coreColor, int haloColor, float coreWidth, float haloWidth,
-        long beamLifetimeMs, long burstLifetimeMs, float burstStartRadius, float burstEndRadius,
+        long beamLifetimeMs, boolean beamFadeFromNear,
+        float beamWidthStartScale, float beamWidthPeakScale, long burstLifetimeMs,
+        float burstStartRadius, float burstEndRadius,
         float pulseSpeed, float muzzleBurstScale, float contactBurstScale, float endBurstScale,
         long shockwaveLifetimeMs, float shockwaveStartRadius, int shockwaveCoreColor, int shockwaveHaloColor,
         Vec3 firstPersonMainMuzzle, Vec3 firstPersonOffhandMuzzle,
         Vec3 thirdPersonMuzzle) {
     private static final Set<String> FIELDS = Set.of(
             "core_color", "halo_color", "core_width", "halo_width", "beam_lifetime_ms",
+            "beam_fade_from_near", "beam_width_start_scale", "beam_width_peak_scale",
             "burst_lifetime_ms", "burst_start_radius", "burst_end_radius", "pulse_speed",
             "muzzle_burst_scale", "contact_burst_scale", "end_burst_scale",
             "shockwave_lifetime_ms", "shockwave_start_radius",
@@ -29,6 +32,9 @@ public record DJRayEffectProfile(int coreColor, int haloColor, float coreWidth, 
         if (!Float.isFinite(coreWidth) || !Float.isFinite(haloWidth)
                 || coreWidth <= 0.0F || haloWidth < coreWidth
                 || beamLifetimeMs <= 0L || burstLifetimeMs <= 0L
+                || !Float.isFinite(beamWidthStartScale) || beamWidthStartScale < 0.0F
+                || !Float.isFinite(beamWidthPeakScale) || beamWidthPeakScale < 0.0F
+                || (beamWidthPeakScale > 0.0F && beamWidthPeakScale < beamWidthStartScale)
                 || !Float.isFinite(burstStartRadius) || !Float.isFinite(burstEndRadius)
                 || burstStartRadius < 0.0F || burstEndRadius < burstStartRadius
                 || !Float.isFinite(pulseSpeed) || pulseSpeed <= 0.0F
@@ -68,7 +74,11 @@ public record DJRayEffectProfile(int coreColor, int haloColor, float coreWidth, 
         return new DJRayEffectProfile(
                 color(object, "core_color"), color(object, "halo_color"),
                 positiveFloat(object, "core_width"), positiveFloat(object, "halo_width"),
-                positiveLong(object, "beam_lifetime_ms"), positiveLong(object, "burst_lifetime_ms"),
+                positiveLong(object, "beam_lifetime_ms"),
+                optionalBoolean(object, "beam_fade_from_near", false),
+                optionalNonNegativeFloat(object, "beam_width_start_scale", 1.0F),
+                optionalNonNegativeFloat(object, "beam_width_peak_scale", 0.0F),
+                positiveLong(object, "burst_lifetime_ms"),
                 nonNegativeFloat(object, "burst_start_radius"), nonNegativeFloat(object, "burst_end_radius"),
                 number(object, "pulse_speed").floatValue(), optionalNonNegativeFloat(object, "muzzle_burst_scale", 1.0F),
                 optionalNonNegativeFloat(object, "contact_burst_scale", 1.0F),
@@ -154,6 +164,17 @@ public record DJRayEffectProfile(int coreColor, int haloColor, float coreWidth, 
             throw new IllegalArgumentException(field + " must be a non-negative integer");
         }
         return (long) value;
+    }
+
+    private static boolean optionalBoolean(JsonObject object, String field, boolean fallback) {
+        if (!object.has(field)) {
+            return fallback;
+        }
+        JsonElement element = object.get(field);
+        if (!(element instanceof JsonPrimitive primitive) || !primitive.isBoolean()) {
+            throw new IllegalArgumentException(field + " must be a boolean");
+        }
+        return primitive.getAsBoolean();
     }
 
     private static Vec3 vector(JsonObject object, String field) {

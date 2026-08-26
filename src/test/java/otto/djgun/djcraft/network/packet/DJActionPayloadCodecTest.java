@@ -31,6 +31,8 @@ class DJActionPayloadCodecTest {
                 new DJAutoChargeStartPayload(PROOF, InteractionHand.MAIN_HAND, SOURCE));
         roundTrip(DJTridentFirePayload.CODEC,
                 new DJTridentFirePayload(PROOF, InteractionHand.MAIN_HAND, SOURCE));
+        roundTrip(DJMaceThrowPayload.CODEC,
+                new DJMaceThrowPayload(PROOF, InteractionHand.MAIN_HAND, SOURCE));
         roundTrip(DJShieldUsePayload.CODEC,
                 new DJShieldUsePayload(PROOF, InteractionHand.OFF_HAND,
                         new DJActionSource(DJActionSource.OFFHAND_SLOT, 77)));

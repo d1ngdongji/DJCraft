@@ -47,6 +47,24 @@ public final class DJItemCooldownManager {
         return profile != null ? profile.resolveBeatCooldown(calculatedFallback) : calculatedFallback;
     }
 
+    public static int getUseBeatCooldown(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return 1;
+        }
+
+        DJItemTimingProfile profile = snapshot.byKey().get(stack.getItem());
+        int resolvedBeatCooldown = getBeatCooldown(stack);
+        return profile != null ? profile.resolveUseBeatCooldown(resolvedBeatCooldown) : resolvedBeatCooldown;
+    }
+
+    public static boolean hasExplicitUseBeatCooldown(ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        DJItemTimingProfile profile = snapshot.byKey().get(stack.getItem());
+        return profile != null && profile.useBeatCooldown() != null;
+    }
+
     public static int getSwitchWarmup(ItemStack stack) {
         if (stack.isEmpty()) {
             return 0;

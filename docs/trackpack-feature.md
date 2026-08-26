@@ -33,11 +33,12 @@
 
 ```text
 <DJCraft JAR>/djcraft/trackpacks/<packId>/
+<DJCraft JAR>/djcraft/trackpacks/<packId>.djcraft
 ```
 
-源码作者把这类内容放在 `src/main/resources/djcraft/trackpacks/<packId>/`。内置来源只接受
-直接子目录形式，不接受内嵌 `.djcraft`；目录内部的 `track.json`、音频和可选资源契约与
-外置目录曲包完全相同。
+源码作者可以把这类内容放在 `src/main/resources/djcraft/trackpacks/<packId>/`，也可以放入
+`src/main/resources/djcraft/trackpacks/<packId>.djcraft`。目录或归档内部的 `track.json`、
+音频和可选资源契约与外置曲包完全相同；内置 `.djcraft` 只读且不会提供给客户端下载。
 
 ### 2.1 目录曲目包
 

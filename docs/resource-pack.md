@@ -89,6 +89,8 @@ assets/djcraft/models/item/laser_crossbow.json
 assets/djcraft/models/item/laser_crossbow_charged.json
 assets/djcraft/models/item/magic_crossbow.json
 assets/djcraft/models/item/magic_crossbow_charged.json
+assets/djcraft/models/item/assault_crossbow.json
+assets/djcraft/models/item/assault_crossbow_charged.json
 assets/djcraft/models/item/explosive_bow_base.json
 assets/djcraft/models/item/explosive_bow.json
 assets/djcraft/models/item/explosive_bow_stage1.json
@@ -120,6 +122,9 @@ assets/djcraft/textures/mob_effect/rend.png
 `djcraft:magic_crossbow` 同样保留原版弩语义与 DJCraft 后坐动画，并使用独立的
 `magic_crossbow.png` / `magic_crossbow_charged.png` 贴图和对应模型入口。
 
+`djcraft:assault_crossbow` 使用 `assault_crossbow.png` / `assault_crossbow_charged.png`；其
+`ray_effects/assault_crossbow.json` 定义无爆发的深灰色弹痕、600 ms 总寿命，以及从近端向远端推进的渐隐边界。
+
 `djcraft:explosive_bow` 使用 `explosive_bow_stage0.png` 到 `stage3.png`。非 DJ 原版拉弓沿用
 `pulling`/`pull` predicate；DJ 自动蓄力使用 `djcraft:auto_charge`，在虚拟节拍进度 0.25、0.5、0.75
 切换到后三阶段。资源包覆盖模型时应同时保留两组 predicate，避免只在一种模式下显示蓄力。
@@ -139,6 +144,7 @@ assets/djcraft/lang/zh_cn.json
 物品 DJ Profile Tooltip 使用以下语言键：
 
 - `tooltip.djcraft.beat_cooldown`
+- `tooltip.djcraft.use_beat_cooldown`
 - `tooltip.djcraft.switch_warmup`
 - `tooltip.djcraft.attack_energy_cost`
 - `tooltip.djcraft.use_energy_cost`
@@ -146,6 +152,14 @@ assets/djcraft/lang/zh_cn.json
 - `tooltip.djcraft.item_tag.smash`
 - `tooltip.djcraft.dj_crafting_table_usage`
 - `tooltip.djcraft.portable_jukebox_usage`
+
+会话开始时的成就式曲目提示标题使用 `toast.djcraft.now_playing`。提示中的曲目名称来自
+曲目包 `meta.display_name`（缺失时回退曲目包 ID），图标沿用动态唱片物品模型，因此
+`disc.png` 及内置 `empty_disc.png` 后备贴图会像物品栏中的唱片一样响应资源重载。
+
+内置附魔名称使用 `enchantment.djcraft.aerial_step`、`enchantment.djcraft.rending`、
+`enchantment.djcraft.ray_overcharge` 和 `enchantment.djcraft.lingering_sweep`；资源包可只覆盖显示名称，
+附魔等级、适用物品和效果仍由服务端数据包与代码决定。
 
 攻击或使用能耗为 0 时，对应能耗行不显示。能耗数值来自服务器同步的数据包 Profile；资源包只能覆盖显示文本，不能改变实际成本。
 
@@ -168,7 +182,7 @@ assets/djcraft/shaders/core/ray_effect.fsh
 延迟扩散环和起始闪光；Java 只提交进度与 definition `color`，不再拼接环形几何。
 
 `ray_effect` 使用 `POSITION_TEX_COLOR` 顶点格式绘制相机朝向光束、径向爆发和缓存的三维球面，Java 设置
-`EffectMode`、`Progress` 与 `Time`。它使用加法混合、深度测试和关闭深度写入；加载或编译失败
+`EffectMode`、`Progress`、`Time`、`BeamFadeFromNear` 与 `BeamWidthAnimated`。它使用加法混合、深度测试和关闭深度写入；加载或编译失败
 只会禁用射线视觉，不改变服务端伤害。
 
 着色器接口与 Minecraft 1.21.1 渲染管线绑定。修改 uniform、attribute 或 sampler 名称前必须同步核对 `DJComboHudRenderer`、`DJFallingBeatRenderer`、`DJParryShieldRenderer` 与 `DJRayEffectRenderer` 的加载和赋值代码。着色器编译失败可能使对应视觉效果不可用。
@@ -185,6 +199,9 @@ assets/djcraft/shaders/core/ray_effect.fsh
   "core_width": 0.035,
   "halo_width": 0.11,
   "beam_lifetime_ms": 180,
+  "beam_fade_from_near": false,
+  "beam_width_start_scale": 1.0,
+  "beam_width_peak_scale": 0.0,
   "burst_lifetime_ms": 240,
   "burst_start_radius": 0.12,
   "burst_end_radius": 0.75,
@@ -209,7 +226,15 @@ assets/djcraft/shaders/core/ray_effect.fsh
 `first_person_muzzle`，此时它作为主手偏移且副手自动镜像；不能同时缺少旧字段和任一手别专用字段。
 `muzzle_burst_scale`、`contact_burst_scale` 与 `end_burst_scale` 分别缩放枪口、权威实体交点和最终
 截断点的爆发半径，必须为非负有限数，省略时均为 `1.0`；设为 `0` 可隐藏对应位置的爆发。
-光束寿命结束前渐隐；爆发在枪口、每个权威实体交点和最终截断点以 `burst_start_radius` 为初始半径，
+`beam_fade_from_near` 可省略并默认 `false`，此时整条光束同时渐隐；设为 `true` 时消失边界按 UV
+从枪口向权威终点推进，让近端先消失、远端最后消失。光束在 `beam_lifetime_ms` 结束时完全消失；
+所有射线光束均使用连续实线，不再沿长度方向生成周期性明暗带；`pulse_speed` 仅继续控制爆发和冲击波
+等仍使用 `Time` 的动画。
+`beam_width_peak_scale` 省略或设为 `0` 时禁用宽度动画；启用时必须不小于非负的
+`beam_width_start_scale`。光束从起始倍率平滑增粗到峰值倍率，再收缩到宽度 0；动画期间不改变
+颜色透明度；渲染器通过 `BeamWidthAnimated` 告知着色器由几何宽度负责消失。内置激光弩使用
+`0.25` 起始倍率、`2.25` 峰值倍率和 360 ms 光束寿命。
+爆发在枪口、每个权威实体交点和最终截断点以 `burst_start_radius` 为初始半径，
 在寿命中点扩张至 `burst_end_radius`，随后收缩回初始半径并渐隐。所有 JSON 在
 F3+T 准备阶段解析并原子发布，不在渲染热路径读取文件。
 
@@ -240,6 +265,7 @@ F3+T 准备阶段解析并原子发布，不在渲染热路径读取文件。
 | `djcraft:combat.parry` | `assets/djcraft/sounds/combat/parry.ogg` |
 | `djcraft:weapon.laser_crossbow_shoot` | `assets/djcraft/sounds/weapons/laser_crossbow_shoot.ogg` |
 | `djcraft:weapon.magic_crossbow_shoot` | `assets/djcraft/sounds/weapons/magic_crossbow_shoot.ogg` |
+| `djcraft:weapon.assault_crossbow_shoot` | `assets/djcraft/sounds/weapons/assault_crossbow_shoot.ogg` |
 | `djcraft:weapon.explosive_bow_charge` | `assets/djcraft/sounds/weapons/explosive_bow_charge.ogg` |
 | `djcraft:weapon.explosive_bow_shoot` | `assets/djcraft/sounds/weapons/explosive_bow_shoot.ogg` |
 | `djcraft:weapon.trident_redirect` | `assets/djcraft/sounds/weapons/trident_redirect.ogg` |
@@ -257,12 +283,13 @@ UI 提示和 DJ 曲目不受此限制。
 64 个 `BLOCK` 方块碎屑构成宽范围喷发，材质取服务端确认的脚下支撑方块；该粒子规则目前不是
 资源包可配置项。
 
-激光弩和魔法弩的 `trigger_impact` 分别使用各自的射击事件，命中合法目标时共同使用
+激光弩、魔法弩和冲锋弩的 `trigger_impact` 分别使用各自的射击事件，命中合法目标时共同使用
 `djcraft:weapon.ray_hit`；对应 Profile 为 `assets/djcraft/djcraft/weapon_sounds/laser_crossbow.json`
-和 `magic_crossbow.json`。两个 CapCut WAV 已转换为 OGG，击中音使用提供的 OGG 文件。
+、`magic_crossbow.json` 和 `assault_crossbow.json`。击中音使用共用的 OGG 文件。
 只有节拍 Hit 的实际伤害会广播 `target_hit`。由 `djcraftOffBeatAttackDamagePercent` 放行的 Miss
-可以匹配开火阶段的 `when.beat: "miss"` 规则，但即使伤害目标也不会触发 `target_hit`；原版受伤、
-投射物碰撞、发射和爆炸等世界声音不受此限制。
+可以匹配开火阶段的 `when.beat: "miss"` 规则，但即使伤害目标也不会触发 `target_hit`。原版受伤、
+投射物碰撞、发射和爆炸等世界声音不受此限制。`target_hit` 的空间音源位于攻击玩家的位置，
+而不是受伤目标的位置。
 
 爆炸弓的 `charge_start` 使用提供的蓄力 OGG，按下后经过 1.0 虚拟节拍的 `trigger_impact` 使用提供的发射 OGG；冲击点
 原版爆炸声由服务端玩法逻辑单独广播，不由资源 Profile 触发。对应 Profile 为

@@ -42,7 +42,7 @@ import otto.djgun.djcraft.network.packet.DJChargeStartPayload;
  * <b>关于蓄力速度：</b>蓄力型武器的"冷却节拍数"用于控制蓄力速度（即达到满力所需的拍数），
  * 而非松开后施加的额外冷却。具体的蓄力速度缩放逻辑因武器而异（每种武器在自己的 Mixin
  * 中读取
- * {@link otto.djgun.djcraft.combat.DJItemCooldownManager#getBeatCooldown(ItemStack)}
+ * {@link otto.djgun.djcraft.combat.DJItemCooldownManager#getUseBeatCooldown(ItemStack)}
  * 并映射为蓄力时长），无法在本通用类中泛化实现，因此不在此处处理。
  */
 @OnlyIn(Dist.CLIENT)
@@ -96,7 +96,7 @@ public final class DJChargeWeaponHelper {
                     PRESS_MISS_PENALTY_BEATS - 0.4, PRESS_MISS_PENALTY_BEATS, result, false);
         } else {
             DJAnimationRuntime.getInstance().emit(DJAnimationEvent.Kind.CHARGE_START, hand, stack, session,
-                    DJItemCooldownManager.getBeatCooldown(stack), DJActionOutcome.judged(result, false),
+                    DJItemCooldownManager.getUseBeatCooldown(stack), DJActionOutcome.judged(result, false),
                     proof.actionSequence(), result.judgedAtMs(), result.beatIndex());
         }
         // 命中：放行原版逻辑，允许玩家开始蓄力

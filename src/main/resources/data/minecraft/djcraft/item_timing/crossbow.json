@@ -1,4 +1,5 @@
 {
   "beat_cooldown": 4,
+  "use_beat_cooldown": 4,
   "switch_warmup": 1
 }

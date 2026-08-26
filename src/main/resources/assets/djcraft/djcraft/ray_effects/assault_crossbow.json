@@ -1,0 +1,18 @@
+{
+  "core_color": "#555555F0",
+  "halo_color": "#202020A8",
+  "core_width": 0.018,
+  "halo_width": 0.055,
+  "beam_lifetime_ms": 600,
+  "beam_fade_from_near": true,
+  "burst_lifetime_ms": 600,
+  "burst_start_radius": 0.0,
+  "burst_end_radius": 0.0,
+  "pulse_speed": 8.0,
+  "muzzle_burst_scale": 0.0,
+  "contact_burst_scale": 0.0,
+  "end_burst_scale": 0.0,
+  "first_person_main_muzzle": [0.0, -0.18, 0.45],
+  "first_person_offhand_muzzle": [-0.22, -0.18, 0.45],
+  "third_person_muzzle": [0.28, -0.35, 0.35]
+}

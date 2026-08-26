@@ -212,12 +212,19 @@ public class DJClientEvents {
         }
 
         int beatCooldown = DJItemCooldownManager.getBeatCooldown(stack);
+        int useBeatCooldown = DJItemCooldownManager.getUseBeatCooldown(stack);
         int switchWarmup = DJItemCooldownManager.getSwitchWarmup(stack);
         double attackEnergyCost = DJItemCooldownManager.getAttackEnergyCost(stack);
         double useEnergyCost = DJItemCooldownManager.getUseEnergyCost(stack);
 
         event.getToolTip().add(Component.translatable("tooltip.djcraft.beat_cooldown", beatCooldown)
                 .withStyle(ChatFormatting.YELLOW));
+
+        if (DJItemCooldownManager.hasExplicitUseBeatCooldown(stack)) {
+            event.getToolTip().add(Component.translatable(
+                    "tooltip.djcraft.use_beat_cooldown", useBeatCooldown)
+                    .withStyle(ChatFormatting.DARK_AQUA));
+        }
 
         if (switchWarmup != beatCooldown) {
             event.getToolTip().add(Component.translatable("tooltip.djcraft.switch_warmup", switchWarmup)

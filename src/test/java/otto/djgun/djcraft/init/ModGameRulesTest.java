@@ -8,11 +8,11 @@ import net.minecraft.world.level.GameRules;
 
 class ModGameRulesTest {
     @Test
-    void newlyConstructedRulesUseLegacyGameplayDefaults() {
+    void newlyConstructedRulesUseGameplayDefaults() {
         ModGameRules.bootstrap();
         GameRules rules = new GameRules();
 
-        assertEquals(0, ModGameRules.offBeatAttackDamagePercent(rules));
+        assertEquals(50, ModGameRules.offBeatAttackDamagePercent(rules));
         assertEquals(2, ModGameRules.baseMaxToleranceChances(rules));
         assertEquals(5, ModGameRules.idleAttackableBeatsBeforeComboReset(rules));
         assertEquals(3, ModGameRules.maxToleranceChances(rules, 1));

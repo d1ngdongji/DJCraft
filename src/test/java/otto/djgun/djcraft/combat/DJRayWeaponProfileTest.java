@@ -113,6 +113,22 @@ class DJRayWeaponProfileTest {
     }
 
     @Test
+    void builtInAssaultCrossbowDefinesRequestedCombatAndTimingValues() throws Exception {
+        DJRayWeaponProfile rayProfile = loadRayProfile("assault_crossbow.json");
+        assertEquals(96.0, rayProfile.range());
+        assertEquals(7.0, rayProfile.baseDamage());
+        assertFalse(rayProfile.pierceEntities());
+        assertEquals(ResourceLocation.parse("djcraft:assault_crossbow"), rayProfile.effect());
+        assertEquals(7.0, rayProfile.horizontalAimAssistPercent());
+        assertEquals(7.0, rayProfile.verticalAimAssistPercent());
+
+        DJItemTimingProfile timingProfile = loadTimingProfile("assault_crossbow.json");
+        assertEquals(1, timingProfile.beatCooldown());
+        assertEquals(1, timingProfile.switchWarmup());
+        assertEquals(2.0, timingProfile.resolveUseEnergyCost());
+    }
+
+    @Test
     void builtInExplosiveBowDefinesAutomaticChargeAndExplosion() throws Exception {
         DJRayWeaponProfile rayProfile = loadRayProfile("explosive_bow.json");
         assertEquals(96.0, rayProfile.range());
