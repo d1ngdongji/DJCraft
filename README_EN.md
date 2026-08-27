@@ -98,6 +98,13 @@ The detailed technical and gameplay documentation is currently maintained in Chi
 
 ## License
 
-The source code for this project is released under the [Mozilla Public License 2.0](LICENSE).
+All rights reserved. Do not redistribute this mod or its assets without permission.
 
-The MPL 2.0 applies to the licensed source code in this project; third-party dependencies, Minecraft/NeoForge content, and other external resources remain subject to their respective licenses. When distributing modified source code or build artifacts, please retain the applicable license and copyright notices.
+## Development References
+
+- [NeoForge documentation](https://docs.neoforged.net/)
+- [NeoForge API documentation](https://docs.neoforged.net/docs/gettingstarted/)
+- [NeoForge Gradle toolchain documentation](https://docs.neoforged.net/toolchain/docs/)
+- [GeckoLib documentation](https://github.com/bernie-g/geckolib/wiki/Getting-Started)
+- [Minecraft Wiki](https://minecraft.wiki/)
+- [Player Animation Library documentation](https://docs.zigythebird.com/pal/intro)

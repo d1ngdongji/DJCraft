@@ -74,7 +74,7 @@ public class TrackPackManager {
 
     /**
      * 初始化管理器并加载所有曲目包
-     *
+     * 
      * @param gameDir 游戏运行目录
      */
     public void initialize(Path gameDir) {

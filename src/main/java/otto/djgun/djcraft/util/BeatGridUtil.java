@@ -13,7 +13,7 @@ public class BeatGridUtil {
 
     /**
      * 计算经过指定节拍数后的目标时间戳
-     *
+     * 
      * @param currentTimeMs 当前时间（相对于曲目开始）
      * @param beats         节拍列表（必须按时间排序）
      * @param beatsToWait   需要等待的节拍数（可以是小数）

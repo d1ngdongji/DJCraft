@@ -1,5 +1,4 @@
 # eclipse
-.eclipse/
 bin
 *.launch
 .settings
@@ -19,14 +18,12 @@ build
 .gradle
 
 # other
-.agents/
 eclipse
 run
 runs
 run-data
 .kiro
 .vscode
-.codex/
 libs
 
 repo
