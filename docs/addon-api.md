@@ -231,6 +231,9 @@ resolver 会在声音请求校验和物品身份解析中频繁调用。只读�
 assets/<addon_namespace>/animations/*.json
 ```
 
+Clip ID 必须使用 `animation.<addon_namespace>.first_person.<名称>`；加载器会忽略普通实体动画以及
+作者 namespace 与资源文件 namespace 不一致的 Clip。
+
 再创建：
 
 ```text

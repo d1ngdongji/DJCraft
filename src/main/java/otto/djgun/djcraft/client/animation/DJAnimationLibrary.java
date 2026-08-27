@@ -291,11 +291,14 @@ public final class DJAnimationLibrary extends SimpleJsonResourceReloadListener {
         return result;
     }
 
-    private static void parseClipDocument(ResourceLocation source, JsonElement document,
+    static void parseClipDocument(ResourceLocation source, JsonElement document,
             Map<String, DJAnimationCurve> output, Map<String, ResourceLocation> sources) {
         JsonObject root = GsonHelper.convertToJsonObject(document, "animation document");
         JsonObject animations = GsonHelper.getAsJsonObject(root, "animations");
         for (Map.Entry<String, JsonElement> entry : animations.entrySet()) {
+            if (!isFirstPersonClip(source, entry.getKey())) {
+                continue;
+            }
             ResourceLocation previousSource = sources.putIfAbsent(entry.getKey(), source);
             if (previousSource != null) {
                 DJCraft.LOGGER.error("Ignoring duplicate animation clip {} from {}; already supplied by {}",
@@ -304,6 +307,10 @@ public final class DJAnimationLibrary extends SimpleJsonResourceReloadListener {
             }
             output.put(entry.getKey(), parseClip(entry.getValue()));
         }
+    }
+
+    private static boolean isFirstPersonClip(ResourceLocation source, String clipId) {
+        return clipId.startsWith("animation." + source.getNamespace() + ".first_person.");
     }
 
     static DJAnimationCurve parseClip(JsonElement element) {

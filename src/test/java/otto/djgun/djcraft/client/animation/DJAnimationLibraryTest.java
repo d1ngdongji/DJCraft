@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -200,6 +201,48 @@ class DJAnimationLibraryTest {
         assertEquals(DJAnimationTransform.IDENTITY, end.handSpace());
         assertEquals(1.0f, end.itemCenterSpace().translationYBlocks(), 0.0001f);
         assertEquals(10.0f, end.itemCenterSpace().rotationZDegrees(), 0.0001f);
+    }
+
+    @Test
+    void clipDocumentIgnoresEntityAnimationsAndForeignFirstPersonIds() {
+        Map<String, DJAnimationCurve> curves = new HashMap<>();
+        Map<String, ResourceLocation> sources = new HashMap<>();
+
+        DJAnimationLibrary.parseClipDocument(
+                ResourceLocation.parse("example:entity/mixed.animation"),
+                JsonParser.parseString("""
+                        {
+                          "animations": {
+                            "animation.example.entity.walk": {
+                              "bones": {"body": {}}
+                            },
+                            "animation.foreign.first_person.attack": {
+                              "animation_length": 1.0,
+                              "bones": {}
+                            },
+                            "animation.example.first_person.attack": {
+                              "animation_length": 1.0,
+                              "bones": {
+                                "first_person_hand": {
+                                  "position": {
+                                    "0.0": {"vector":[0,0,0]},
+                                    "1.0": {"vector":[0,0,0]}
+                                  },
+                                  "rotation": {
+                                    "0.0": {"vector":[0,0,0]},
+                                    "1.0": {"vector":[0,0,0]}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                        """),
+                curves, sources);
+
+        assertEquals(Set.of("animation.example.first_person.attack"), curves.keySet());
+        assertEquals(ResourceLocation.parse("example:entity/mixed.animation"),
+                sources.get("animation.example.first_person.attack"));
     }
 
     @Test

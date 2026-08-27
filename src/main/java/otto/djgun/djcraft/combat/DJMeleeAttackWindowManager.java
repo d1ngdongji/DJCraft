@@ -119,10 +119,13 @@ public final class DJMeleeAttackWindowManager {
     private static boolean scan(ServerPlayer player, ActiveWindow window, Vec3 currentEye) {
         DJSweptMeleeVolume volume = DJSweptMeleeVolume.create(
                 window.lastEye, currentEye, window.look, window.behavior);
-        List<TargetCandidate> candidates = player.serverLevel().getEntities(player, volume.bounds(),
-                        target -> isLegalTarget(player, target)
-                                && volume.intersects(target.getBoundingBox()))
-                .stream()
+        // Level#getEntities evaluates its predicate while iterating the live entity
+        // section. Keep that predicate side-effect free because compatibility hooks in
+        // target checks may remove or replace an entity.
+        List<Entity> nearby = player.serverLevel().getEntities(player, volume.bounds(), target -> true);
+        List<TargetCandidate> candidates = nearby.stream()
+                .filter(target -> isLegalTarget(player, target)
+                        && volume.intersects(target.getBoundingBox()))
                 .map(target -> candidate(window, currentEye, target))
                 .toList();
         if (window.behavior instanceof DJAreaMeleeBehavior area) {

@@ -432,7 +432,10 @@ target_hit
 assets/<namespace>/animations/*.json
 ```
 
-所有 namespace 都会加载。附属 Mod 可直接在自己的 namespace 中导出 Clip；资源包通过相同资源路径覆盖低优先级资源。Clip 名称也应包含作者 namespace，例如：
+所有 namespace 都会扫描，但加载器只解析名称严格符合
+`animation.<资源 namespace>.first_person.<名称>` 的 Clip。普通实体动画以及名称中的作者 namespace
+与资源文件 namespace 不一致的 Clip 会被忽略。附属 Mod 可直接在自己的 namespace 中导出 Clip；
+资源包通过相同资源路径覆盖低优先级资源。例如：
 
 ```text
 assets/exampleaddon/animations/rifle.animation.json
