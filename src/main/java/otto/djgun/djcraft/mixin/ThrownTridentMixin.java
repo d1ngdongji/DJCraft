@@ -58,6 +58,9 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
     private static final EntityDataAccessor<Boolean> DJ_RETURNING = SynchedEntityData.defineId(
             ThrownTrident.class, EntityDataSerializers.BOOLEAN);
     @Unique
+    private static final EntityDataAccessor<Boolean> DJ_FINISHED = SynchedEntityData.defineId(
+            ThrownTrident.class, EntityDataSerializers.BOOLEAN);
+    @Unique
     private static final String DJ_FLIGHT_TAG = "DJCraftFlight";
     @Unique
     private static final String DJ_REDIRECT_ENABLED_TAG = "DJCraftRedirectEnabled";
@@ -112,6 +115,7 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
         builder.define(DJ_FLIGHT, false);
         builder.define(DJ_REDIRECT_ENABLED, false);
         builder.define(DJ_RETURNING, false);
+        builder.define(DJ_FINISHED, false);
     }
 
     @Override
@@ -121,18 +125,21 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
         self.getEntityData().set(DJ_FLIGHT, true);
         self.getEntityData().set(DJ_REDIRECT_ENABLED, true);
         self.getEntityData().set(DJ_RETURNING, false);
-        self.setNoGravity(true);
+        self.getEntityData().set(DJ_FINISHED, false);
+        djcraft$storedLoyalty = self.getEntityData().get(ID_LOYALTY);
+        self.setNoGravity(DJTridentRules.shouldUseNoGravity(djcraft$storedLoyalty));
         self.setGlowingTag(true);
         djcraft$expandCollisionBox();
         djcraft$sessionId = sessionId;
         djcraft$returnAtTimelineMs = returnAtTimelineMs;
-        djcraft$storedLoyalty = self.getEntityData().get(ID_LOYALTY);
         djcraft$armReturnGate();
     }
 
     @Override
     public boolean djcraft$isDJTrident() {
-        return ((ThrownTrident) (Object) this).getEntityData().get(DJ_FLIGHT);
+        ThrownTrident self = (ThrownTrident) (Object) this;
+        return self.getEntityData().get(DJ_FLIGHT)
+                && !self.getEntityData().get(DJ_FINISHED);
     }
 
     @Override
@@ -177,14 +184,24 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
     @Inject(method = "tick", at = @At("HEAD"))
     private void djcraft$tickFlightState(CallbackInfo ci) {
         ThrownTrident self = (ThrownTrident) (Object) this;
-        if (!djcraft$isDJTrident()) {
+        if (!djcraft$isDJFlightEntity()) {
+            return;
+        }
+        if (self.getEntityData().get(DJ_FINISHED)) {
+            djcraft$applyFinishedFlightState();
+            return;
+        }
+        if (!self.level().isClientSide() && djcraft$storedLoyalty <= 0 && dealtDamage) {
+            djcraft$finishNonReturningFlight();
             return;
         }
         djcraft$preTickPosition = self.position();
         if (!djcraft$expandedCollisionBox) {
             djcraft$expandCollisionBox();
         }
-        self.setNoGravity(true);
+        if (!self.level().isClientSide()) {
+            self.setNoGravity(DJTridentRules.shouldUseNoGravity(djcraft$storedLoyalty));
+        }
         if (!self.level().isClientSide()) {
             self.setGlowingTag(true);
         }
@@ -200,6 +217,8 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
             self.getEntityData().set(DJ_REDIRECT_ENABLED, false);
             if (djcraft$returnGate) {
                 djcraft$releaseReturnGate();
+            } else if (djcraft$storedLoyalty <= 0) {
+                djcraft$finishNonReturningFlight();
             }
             return;
         }
@@ -268,7 +287,7 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
             return;
         }
         if (DJTridentRules.shouldSkipEntityCollision(
-                self.isNoPhysics(), self.getEntityData().get(DJ_RETURNING))) {
+                self.isNoPhysics(), self.getEntityData().get(DJ_RETURNING), dealtDamage)) {
             cir.setReturnValue(null);
             return;
         }
@@ -277,8 +296,9 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
             cir.setReturnValue(null);
             return;
         }
+        Entity owner = self.getOwner();
         cir.setReturnValue(DJRelativeProjectileCollision.findFirstEntity(self.level(), self, start, end,
-                entity -> ((AbstractArrowAccess) self).djcraft$canHitEntity(entity)));
+                entity -> entity != owner && ((AbstractArrowAccess) self).djcraft$canHitEntity(entity)));
     }
 
     @Inject(method = "onHitEntity", at = @At("HEAD"))
@@ -342,7 +362,7 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
         djcraft$storedLoyalty = tag.getByte(DJ_LOYALTY_TAG);
         djcraft$returnDamageAvailable = tag.getBoolean(DJ_RETURN_DAMAGE_TAG);
         djcraft$returnDamageAtGameTime = tag.getLong(DJ_RETURN_DAMAGE_AT_TAG);
-        self.setNoGravity(true);
+        self.setNoGravity(DJTridentRules.shouldUseNoGravity(djcraft$storedLoyalty));
         self.setGlowingTag(true);
         djcraft$expandCollisionBox();
         if (djcraft$returnGate && djcraft$storedLoyalty > 0) {
@@ -400,11 +420,48 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
     @Unique
     private void djcraft$beginReturnAfterCollision() {
         ThrownTrident self = (ThrownTrident) (Object) this;
-        if (!djcraft$isDJTrident() || self.getEntityData().get(DJ_RETURNING)
-                || djcraft$storedLoyalty <= 0 || djcraft$currentOwnerSession() == null) {
+        if (!djcraft$isDJTrident() || self.getEntityData().get(DJ_RETURNING)) {
+            return;
+        }
+        if (djcraft$storedLoyalty <= 0) {
+            if (!self.level().isClientSide()) {
+                djcraft$finishNonReturningFlight();
+            }
+            return;
+        }
+        if (djcraft$currentOwnerSession() == null) {
             return;
         }
         djcraft$releaseReturnGate();
+    }
+
+    @Unique
+    private void djcraft$finishNonReturningFlight() {
+        ThrownTrident self = (ThrownTrident) (Object) this;
+        self.getEntityData().set(DJ_FINISHED, true);
+        self.getEntityData().set(DJ_REDIRECT_ENABLED, false);
+        self.getEntityData().set(DJ_RETURNING, false);
+        djcraft$applyFinishedFlightState();
+    }
+
+    @Unique
+    private void djcraft$applyFinishedFlightState() {
+        ThrownTrident self = (ThrownTrident) (Object) this;
+        self.setNoPhysics(false);
+        self.setNoGravity(false);
+        self.setGlowingTag(false);
+        djcraft$returnGate = false;
+        djcraft$returnDamageAvailable = false;
+        djcraft$preTickPosition = null;
+        if (djcraft$expandedCollisionBox) {
+            djcraft$expandedCollisionBox = false;
+            self.refreshDimensions();
+        }
+    }
+
+    @Unique
+    private boolean djcraft$isDJFlightEntity() {
+        return ((ThrownTrident) (Object) this).getEntityData().get(DJ_FLIGHT);
     }
 
     @Unique

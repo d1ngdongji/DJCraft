@@ -29,8 +29,13 @@ public final class DJTridentRules {
                 <= RETURN_PICKUP_RADIUS * RETURN_PICKUP_RADIUS;
     }
 
-    public static boolean shouldSkipEntityCollision(boolean noPhysics, boolean returning) {
-        return noPhysics || returning;
+    public static boolean shouldSkipEntityCollision(boolean noPhysics, boolean returning,
+            boolean dealtDamage) {
+        return noPhysics || returning || dealtDamage;
+    }
+
+    public static boolean shouldUseNoGravity(int loyaltyLevel) {
+        return loyaltyLevel > 0;
     }
 
     public static Vec3 radialKnockbackVelocity(Vec3 currentVelocity, Vec3 attackerEyePosition,

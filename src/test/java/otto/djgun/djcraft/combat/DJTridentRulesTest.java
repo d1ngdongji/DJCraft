@@ -68,11 +68,19 @@ class DJTridentRulesTest {
     }
 
     @Test
-    void returningOrNoPhysicsTridentsSkipEntityCollisionQueries() {
-        assertFalse(DJTridentRules.shouldSkipEntityCollision(false, false));
-        assertTrue(DJTridentRules.shouldSkipEntityCollision(true, false));
-        assertTrue(DJTridentRules.shouldSkipEntityCollision(false, true));
-        assertTrue(DJTridentRules.shouldSkipEntityCollision(true, true));
+    void returningNoPhysicsOrAlreadyHitTridentsSkipEntityCollisionQueries() {
+        assertFalse(DJTridentRules.shouldSkipEntityCollision(false, false, false));
+        assertTrue(DJTridentRules.shouldSkipEntityCollision(true, false, false));
+        assertTrue(DJTridentRules.shouldSkipEntityCollision(false, true, false));
+        assertTrue(DJTridentRules.shouldSkipEntityCollision(false, false, true));
+        assertTrue(DJTridentRules.shouldSkipEntityCollision(true, true, true));
+    }
+
+    @Test
+    void onlyLoyaltyTridentsUseNoGravityFlight() {
+        assertFalse(DJTridentRules.shouldUseNoGravity(0));
+        assertTrue(DJTridentRules.shouldUseNoGravity(1));
+        assertTrue(DJTridentRules.shouldUseNoGravity(3));
     }
 
     @Test
