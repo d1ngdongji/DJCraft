@@ -1,7 +1,9 @@
 package otto.djgun.djcraft.combat;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +42,7 @@ public final class DJGroundSlamController {
     }
 
     public static void tick(MinecraftServer server) {
+        List<ReadySlam> ready = null;
         Iterator<Map.Entry<UUID, ActiveSlam>> iterator = ACTIVE.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry<UUID, ActiveSlam> entry = iterator.next();
@@ -64,7 +67,23 @@ public final class DJGroundSlamController {
             }
 
             iterator.remove();
-            finish(player, session, slam, supportingBlock.get());
+            if (ready == null) {
+                ready = new ArrayList<>();
+            }
+            ready.add(new ReadySlam(player, session, slam, supportingBlock.get()));
+        }
+
+        if (ready == null) {
+            return;
+        }
+        for (ReadySlam landing : ready) {
+            ServerPlayer player = landing.player();
+            DJSession currentSession = DJModeManager.getInstance().getSession(player).orElse(null);
+            if (!player.isAlive() || currentSession != landing.session() || !currentSession.isPlaying()) {
+                stopWhoosh(player);
+                continue;
+            }
+            finish(player, currentSession, landing.slam(), landing.supportingBlock());
         }
     }
 
@@ -83,11 +102,14 @@ public final class DJGroundSlamController {
         spawnImpactParticles(player, supportingBlock, center);
         float damage = DJMovementAbilityRules.groundSlamDamage(fallHeight);
         double radius = DJMovementAbilityRules.GROUND_SLAM_RADIUS;
-        AABB searchBounds = new AABB(center, center).inflate(radius);
+        AABB searchBounds = new AABB(center, center).inflate(
+                radius, DJMovementAbilityRules.GROUND_SLAM_VERTICAL_RANGE, radius);
         boolean damagedAny = false;
         for (LivingEntity target : player.serverLevel().getEntitiesOfClass(LivingEntity.class, searchBounds,
                 target -> target != player && target.isAlive()
-                        && target.position().distanceToSqr(center) <= radius * radius)) {
+                        && DJMovementAbilityRules.isWithinGroundSlamRange(
+                                center.x, center.y, center.z,
+                                target.getX(), target.getY(), target.getZ()))) {
             if (!DJCombatHandler.hurtFromMovementAbility(player, target, damage)) {
                 continue;
             }
@@ -132,5 +154,8 @@ public final class DJGroundSlamController {
         ActiveSlam withLowestY(double value) {
             return value == lowestY ? this : new ActiveSlam(sessionId, actionSequence, beatHit, startY, value);
         }
+    }
+
+    private record ReadySlam(ServerPlayer player, DJSession session, ActiveSlam slam, BlockPos supportingBlock) {
     }
 }

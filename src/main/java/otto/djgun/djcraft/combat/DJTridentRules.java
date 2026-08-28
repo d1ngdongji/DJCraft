@@ -38,6 +38,11 @@ public final class DJTridentRules {
         return loyaltyLevel > 0;
     }
 
+    public static boolean shouldWaitForOwnerRespawn(int loyaltyLevel,
+            boolean ownerOnline, boolean ownerAlive) {
+        return loyaltyLevel > 0 && ownerOnline && !ownerAlive;
+    }
+
     public static Vec3 radialKnockbackVelocity(Vec3 currentVelocity, Vec3 attackerEyePosition,
             Vec3 targetCenter, double strength, double knockbackResistance) {
         double effectiveStrength = strength * Math.max(0.0, 1.0 - knockbackResistance);

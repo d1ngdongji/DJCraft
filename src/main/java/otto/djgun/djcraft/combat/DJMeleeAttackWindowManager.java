@@ -42,6 +42,7 @@ public final class DJMeleeAttackWindowManager {
     public static final long MACE_WINDOW_TICKS_PER_ENCHANTMENT_LEVEL = 3L;
     private static final double MAX_CONTINUOUS_MOVEMENT_SQR = 16.0 * 16.0;
     private static final Map<UUID, List<ActiveWindow>> ACTIVE = new HashMap<>();
+    private static final DJMeleeWindowCleanupQueue CLEANUP_QUEUE = new DJMeleeWindowCleanupQueue();
 
     private DJMeleeAttackWindowManager() {
     }
@@ -81,38 +82,43 @@ public final class DJMeleeAttackWindowManager {
     }
 
     public static void tick(MinecraftServer server) {
-        Iterator<Map.Entry<UUID, List<ActiveWindow>>> players = ACTIVE.entrySet().iterator();
-        while (players.hasNext()) {
-            Map.Entry<UUID, List<ActiveWindow>> entry = players.next();
-            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-            if (player == null) {
-                players.remove();
-                continue;
-            }
-            Iterator<ActiveWindow> windows = entry.getValue().iterator();
-            while (windows.hasNext()) {
-                ActiveWindow window = windows.next();
-                if (!isCurrent(player, window)) {
-                    stopForClockDesyncIfStillActive(player, window);
-                    windows.remove();
+        CLEANUP_QUEUE.beginTick();
+        try {
+            Iterator<Map.Entry<UUID, List<ActiveWindow>>> players = ACTIVE.entrySet().iterator();
+            while (players.hasNext()) {
+                Map.Entry<UUID, List<ActiveWindow>> entry = players.next();
+                ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+                if (player == null) {
+                    players.remove();
                     continue;
                 }
-                Vec3 eye = player.getEyePosition();
-                if (eye.distanceToSqr(window.lastEye) > MAX_CONTINUOUS_MOVEMENT_SQR) {
-                    stopForClockDesyncIfStillActive(player, window);
-                    windows.remove();
-                    continue;
+                Iterator<ActiveWindow> windows = entry.getValue().iterator();
+                while (windows.hasNext()) {
+                    ActiveWindow window = windows.next();
+                    if (!isCurrent(player, window)) {
+                        stopForClockDesyncIfStillActive(player, window);
+                        windows.remove();
+                        continue;
+                    }
+                    Vec3 eye = player.getEyePosition();
+                    if (eye.distanceToSqr(window.lastEye) > MAX_CONTINUOUS_MOVEMENT_SQR) {
+                        stopForClockDesyncIfStillActive(player, window);
+                        windows.remove();
+                        continue;
+                    }
+                    boolean finished = scan(player, window, eye);
+                    window.lastEye = eye;
+                    if (finished || window.state.shouldFinish(player.level().getGameTime())) {
+                        finish(player, window);
+                        windows.remove();
+                    }
                 }
-                boolean finished = scan(player, window, eye);
-                window.lastEye = eye;
-                if (finished || window.state.shouldFinish(player.level().getGameTime())) {
-                    finish(player, window);
-                    windows.remove();
+                if (entry.getValue().isEmpty()) {
+                    players.remove();
                 }
             }
-            if (entry.getValue().isEmpty()) {
-                players.remove();
-            }
+        } finally {
+            CLEANUP_QUEUE.endTick(ACTIVE);
         }
     }
 
@@ -294,11 +300,12 @@ public final class DJMeleeAttackWindowManager {
     }
 
     public static void cleanupPlayer(UUID playerId) {
-        ACTIVE.remove(playerId);
+        CLEANUP_QUEUE.remove(playerId, ACTIVE);
     }
 
     public static void clear() {
         ACTIVE.clear();
+        CLEANUP_QUEUE.clear();
     }
 
     private static final class ActiveWindow {

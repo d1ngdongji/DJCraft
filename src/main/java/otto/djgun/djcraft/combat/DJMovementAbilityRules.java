@@ -15,6 +15,7 @@ public final class DJMovementAbilityRules {
     public static final float GROUND_SLAM_MIN_DAMAGE = 4.0F;
     public static final float GROUND_SLAM_MAX_DAMAGE = 16.0F;
     public static final double GROUND_SLAM_RADIUS = 4.0;
+    public static final double GROUND_SLAM_VERTICAL_RANGE = 8.0;
     public static final double GROUND_SLAM_LAUNCH_SPEED = 1.0;
     public static final int MAX_CONSECUTIVE_DASHES = 3;
     public static final int DASH_COOLDOWN_TICKS = 30;
@@ -68,6 +69,14 @@ public final class DJMovementAbilityRules {
                 0.0, 1.0);
         return (float) (GROUND_SLAM_MIN_DAMAGE
                 + (GROUND_SLAM_MAX_DAMAGE - GROUND_SLAM_MIN_DAMAGE) * progress);
+    }
+
+    static boolean isWithinGroundSlamRange(double centerX, double centerY, double centerZ,
+            double targetX, double targetY, double targetZ) {
+        double deltaX = targetX - centerX;
+        double deltaZ = targetZ - centerZ;
+        return deltaX * deltaX + deltaZ * deltaZ <= GROUND_SLAM_RADIUS * GROUND_SLAM_RADIUS
+                && Math.abs(targetY - centerY) <= GROUND_SLAM_VERTICAL_RANGE;
     }
 
     private static boolean canUseMovementAbility(Player player) {

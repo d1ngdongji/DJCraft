@@ -21,6 +21,7 @@ public class DJModeManager {
     private static DJModeManager INSTANCE;
 
     private final Map<UUID, DJSession> activeSessions = new HashMap<>();
+    private List<DJSession> activeSessionSnapshot = List.of();
     private final Map<UUID, RetainedResources> retainedResources = new HashMap<>();
 
     private DJModeManager() {
@@ -68,6 +69,7 @@ public class DJModeManager {
                 initialToleranceChances, initialToleranceRechargeProgress, discId, discStatistics,
                 clock, skipElapsedBeats);
         activeSessions.put(player.getUUID(), session);
+        refreshActiveSessionSnapshot();
 
         DJCraft.LOGGER.info("Started DJ session for {} with track {}",
                 player.getName().getString(), trackPack.id());
@@ -85,6 +87,7 @@ public class DJModeManager {
     public void stopSession(Player player, StopReason reason) {
         DJSession session = activeSessions.remove(player.getUUID());
         if (session != null) {
+            refreshActiveSessionSnapshot();
             session.stop();
             retain(player.getUUID(), session);
             // 直接套用 /dj stop 的方法：任何原因导致服务端停止会话，都强行向客户端下发 StopTrack 负载，确保毫无残留
@@ -118,18 +121,21 @@ public class DJModeManager {
      * 更新所有活跃会话（每tick调用）
      */
     public void tick() {
-        // 使用迭代器安全地移除已结束的会话
-        Iterator<Map.Entry<UUID, DJSession>> it = activeSessions.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<UUID, DJSession> entry = it.next();
-            DJSession session = entry.getValue();
+        // OnBeatEvent listeners may synchronously start or stop sessions. Iterate the
+        // immutable membership snapshot and conditionally remove only the same session.
+        List<DJSession> sessions = activeSessionSnapshot;
+        for (DJSession session : sessions) {
+            UUID playerId = session.getPlayer().getUUID();
+            if (activeSessions.get(playerId) != session) {
+                continue;
+            }
 
             if (session.isPlaying()) {
                 session.tick();
             }
-            if (!session.isPlaying()) {
-                it.remove();
-                retain(entry.getKey(), session);
+            if (!session.isPlaying() && activeSessions.remove(playerId, session)) {
+                refreshActiveSessionSnapshot();
+                retain(playerId, session);
                 // 会话自然结束，统一下发停止指令给客户端，确保绝对同步
                 if (session.getPlayer() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
                     net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer,
@@ -143,7 +149,7 @@ public class DJModeManager {
      * 获取所有活跃会话
      */
     public Collection<DJSession> getActiveSessions() {
-        return Collections.unmodifiableCollection(activeSessions.values());
+        return activeSessionSnapshot;
     }
 
     /**
@@ -157,15 +163,21 @@ public class DJModeManager {
      * 停止所有会话
      */
     public void stopAllSessions() {
-        for (DJSession session : activeSessions.values()) {
+        List<DJSession> sessions = activeSessionSnapshot;
+        activeSessions.clear();
+        refreshActiveSessionSnapshot();
+        for (DJSession session : sessions) {
             session.stop();
             if (session.getPlayer() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
                 net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer,
                         new StopTrackPayload(session.getSessionId(), StopReason.SERVER_STOP));
             }
         }
-        activeSessions.clear();
         retainedResources.clear();
+    }
+
+    private void refreshActiveSessionSnapshot() {
+        activeSessionSnapshot = List.copyOf(activeSessions.values());
     }
 
     private void retain(UUID playerId, DJSession session) {

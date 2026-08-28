@@ -2,11 +2,14 @@ package otto.djgun.djcraft.mixin;
 
 import javax.annotation.Nullable;
 
+import java.util.UUID;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -15,6 +18,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
@@ -78,6 +82,10 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
     private static final String DJ_RETURN_DAMAGE_TAG = "DJCraftReturnDamageAvailable";
     @Unique
     private static final String DJ_RETURN_DAMAGE_AT_TAG = "DJCraftReturnDamageAtGameTime";
+    @Unique
+    private static final String DJ_OWNER_ID_TAG = "DJCraftOwnerId";
+    @Unique
+    private static final String DJ_WAITING_FOR_RESPAWN_TAG = "DJCraftWaitingForOwnerRespawn";
 
     @Unique
     private boolean djcraft$returnGate;
@@ -99,6 +107,10 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
     private long djcraft$returnDamageAtGameTime;
     @Unique
     private boolean djcraft$returnHitInProgress;
+    @Unique
+    private UUID djcraft$ownerId;
+    @Unique
+    private boolean djcraft$waitingForOwnerRespawn;
 
     public EntityDimensions getDimensions(Pose pose) {
         EntityDimensions base = EntityType.TRIDENT.getDimensions();
@@ -127,6 +139,9 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
         self.getEntityData().set(DJ_RETURNING, false);
         self.getEntityData().set(DJ_FINISHED, false);
         djcraft$storedLoyalty = self.getEntityData().get(ID_LOYALTY);
+        Entity owner = self.getOwner();
+        djcraft$ownerId = owner == null ? null : owner.getUUID();
+        djcraft$waitingForOwnerRespawn = false;
         self.setNoGravity(DJTridentRules.shouldUseNoGravity(djcraft$storedLoyalty));
         self.setGlowingTag(true);
         djcraft$expandCollisionBox();
@@ -181,7 +196,7 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
         return true;
     }
 
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void djcraft$tickFlightState(CallbackInfo ci) {
         ThrownTrident self = (ThrownTrident) (Object) this;
         if (!djcraft$isDJFlightEntity()) {
@@ -209,6 +224,10 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
             self.clientSideReturnTridentTickCount = 0;
         }
         if (self.level().isClientSide()) {
+            return;
+        }
+        if (self.level() instanceof ServerLevel level && djcraft$handleOwnerRespawnWait(level)) {
+            ci.cancel();
             return;
         }
 
@@ -345,6 +364,10 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
         tag.putByte(DJ_LOYALTY_TAG, djcraft$storedLoyalty);
         tag.putBoolean(DJ_RETURN_DAMAGE_TAG, djcraft$returnDamageAvailable);
         tag.putLong(DJ_RETURN_DAMAGE_AT_TAG, djcraft$returnDamageAtGameTime);
+        if (djcraft$ownerId != null) {
+            tag.putUUID(DJ_OWNER_ID_TAG, djcraft$ownerId);
+        }
+        tag.putBoolean(DJ_WAITING_FOR_RESPAWN_TAG, djcraft$waitingForOwnerRespawn);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
@@ -362,6 +385,8 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
         djcraft$storedLoyalty = tag.getByte(DJ_LOYALTY_TAG);
         djcraft$returnDamageAvailable = tag.getBoolean(DJ_RETURN_DAMAGE_TAG);
         djcraft$returnDamageAtGameTime = tag.getLong(DJ_RETURN_DAMAGE_AT_TAG);
+        djcraft$ownerId = tag.hasUUID(DJ_OWNER_ID_TAG) ? tag.getUUID(DJ_OWNER_ID_TAG) : null;
+        djcraft$waitingForOwnerRespawn = tag.getBoolean(DJ_WAITING_FOR_RESPAWN_TAG);
         self.setNoGravity(DJTridentRules.shouldUseNoGravity(djcraft$storedLoyalty));
         self.setGlowingTag(true);
         djcraft$expandCollisionBox();
@@ -462,6 +487,61 @@ public abstract class ThrownTridentMixin implements DJThrownTridentExtension {
     @Unique
     private boolean djcraft$isDJFlightEntity() {
         return ((ThrownTrident) (Object) this).getEntityData().get(DJ_FLIGHT);
+    }
+
+    @Unique
+    private boolean djcraft$handleOwnerRespawnWait(ServerLevel level) {
+        ThrownTrident self = (ThrownTrident) (Object) this;
+        if (djcraft$storedLoyalty <= 0) {
+            return false;
+        }
+        if (djcraft$ownerId == null && self.getOwner() != null) {
+            djcraft$ownerId = self.getOwner().getUUID();
+        }
+        ServerPlayer owner = djcraft$ownerId == null
+                ? null
+                : level.getServer().getPlayerList().getPlayer(djcraft$ownerId);
+        if (!djcraft$waitingForOwnerRespawn) {
+            if (!DJTridentRules.shouldWaitForOwnerRespawn(
+                    djcraft$storedLoyalty, owner != null, owner != null && owner.isAlive())) {
+                return false;
+            }
+            djcraft$waitingForOwnerRespawn = true;
+        }
+
+        if (owner == null) {
+            if (self.pickup == AbstractArrow.Pickup.ALLOWED) {
+                self.spawnAtLocation(self.getWeaponItem().copy(), 0.1F);
+            }
+            self.discard();
+            return true;
+        }
+        if (!owner.isAlive()) {
+            self.getEntityData().set(ID_LOYALTY, (byte) 0);
+            self.getEntityData().set(DJ_RETURNING, true);
+            self.getEntityData().set(DJ_REDIRECT_ENABLED, false);
+            self.setNoPhysics(true);
+            self.setNoGravity(true);
+            self.setDeltaMovement(Vec3.ZERO);
+            dealtDamage = true;
+            djcraft$returnDamageAvailable = false;
+            return true;
+        }
+        if (owner.serverLevel() != level) {
+            return true;
+        }
+
+        self.setOwner(owner);
+        self.getEntityData().set(ID_LOYALTY, djcraft$storedLoyalty);
+        self.getEntityData().set(DJ_RETURNING, true);
+        self.getEntityData().set(DJ_REDIRECT_ENABLED, false);
+        self.setNoPhysics(true);
+        self.setNoGravity(true);
+        self.setDeltaMovement(Vec3.ZERO);
+        dealtDamage = true;
+        djcraft$returnDamageAvailable = false;
+        djcraft$waitingForOwnerRespawn = false;
+        return false;
     }
 
     @Unique

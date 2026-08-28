@@ -101,8 +101,8 @@ public final class DJUtilityActionRequestHandler {
                 continue;
             }
 
-            finishEating(player, pending.hand());
             iterator.remove();
+            finishEating(player, pending.hand());
         }
     }
 

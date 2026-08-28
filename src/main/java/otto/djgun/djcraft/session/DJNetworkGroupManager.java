@@ -35,6 +35,7 @@ import otto.djgun.djcraft.network.packet.DJGroupStatePayload;
 import otto.djgun.djcraft.network.packet.DJGroupAudioRecoveryPayload;
 import otto.djgun.djcraft.network.packet.PlayTrackPayload;
 import otto.djgun.djcraft.network.packet.StopReason;
+import otto.djgun.djcraft.network.server.ClientTrackStatusService;
 import otto.djgun.djcraft.playback.DJPlaylistSequencer;
 import otto.djgun.djcraft.playback.DJPlaybackMode;
 
@@ -494,14 +495,18 @@ public final class DJNetworkGroupManager {
     }
 
     private void sendPreparation(ServerPlayer player, Group group) {
-        List<TrackRequirement> requirements = group.distinctTrackIds.stream().map(trackId -> {
-            TrackPackManager manager = TrackPackManager.getInstance();
+        TrackPackManager manager = TrackPackManager.getInstance();
+        List<TrackRequirement> requirements = new ArrayList<>();
+        for (String trackId : group.distinctTrackIds) {
             String contentHash = manager.getContentHash(trackId).orElse("");
+            if (ClientTrackStatusService.isVerified(player, trackId, contentHash)) {
+                continue;
+            }
             var descriptor = manager.getArchiveDescriptor(trackId).orElse(null);
             boolean downloadable = descriptor != null && descriptor.size() > 0L
                     && descriptor.size() <= Config.maxTrackPackBytes();
-            return new TrackRequirement(trackId, contentHash, downloadable);
-        }).toList();
+            requirements.add(new TrackRequirement(trackId, contentHash, downloadable));
+        }
         PacketDistributor.sendToPlayer(player, new DJGroupPreparePayload(group.id, requirements));
     }
 

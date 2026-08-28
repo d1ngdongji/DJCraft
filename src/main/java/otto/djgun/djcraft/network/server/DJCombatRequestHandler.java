@@ -307,7 +307,8 @@ public final class DJCombatRequestHandler {
         HitResult result = verification.accepted() && validWeapon && !wasOnCooldown
                 ? verification.result() : HitResult.miss(payload.proof().clientTimeMs());
 
-        if (verification.accepted() && validWeapon && !wasOnCooldown) {
+        // A legal auto-charge weapon attempt consumes cooldown even when its proof is a Miss/rejected.
+        if (validWeapon && !wasOnCooldown) {
             applyCooldown(player, stack, verification, true);
         }
         int offBeatDamagePercent = verification.session().getOffBeatAttackDamagePercent();

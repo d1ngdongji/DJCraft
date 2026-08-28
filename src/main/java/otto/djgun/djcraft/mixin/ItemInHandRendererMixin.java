@@ -41,22 +41,36 @@ public class ItemInHandRendererMixin {
             return;
         }
         ItemStack selectedMainStack = player.getMainHandItem();
+        ItemStack selectedOffStack = player.getOffhandItem();
+        DJAnimationRuntime runtime = DJAnimationRuntime.getInstance();
+        int mainDurationBeats = djcraft$switchDuration(mainHandItem, selectedMainStack);
+        int offDurationBeats = djcraft$switchDuration(offHandItem, selectedOffStack);
+        if (runtime.updateHandSwap(mainHandItem, offHandItem, selectedMainStack, selectedOffStack,
+                session, mainDurationBeats, offDurationBeats)) {
+            return;
+        }
         if (DJAnimationSwitchRules.isInstantRemoval(player, mainHandItem, selectedMainStack)) {
             mainHandItem = selectedMainStack;
-            DJAnimationRuntime.getInstance().observeRenderedStack(InteractionHand.MAIN_HAND, selectedMainStack);
+            runtime.observeRenderedStack(InteractionHand.MAIN_HAND, selectedMainStack);
         } else {
             djcraft$scheduleSwitch(
                     InteractionHand.MAIN_HAND, mainHandItem, selectedMainStack, player, session);
         }
 
-        ItemStack selectedOffStack = player.getOffhandItem();
         if (DJAnimationSwitchRules.isInstantRemoval(player, offHandItem, selectedOffStack)) {
             offHandItem = selectedOffStack;
-            DJAnimationRuntime.getInstance().observeRenderedStack(InteractionHand.OFF_HAND, selectedOffStack);
+            runtime.observeRenderedStack(InteractionHand.OFF_HAND, selectedOffStack);
         } else {
             djcraft$scheduleSwitch(
                     InteractionHand.OFF_HAND, offHandItem, selectedOffStack, player, session);
         }
+    }
+
+    @Unique
+    private static int djcraft$switchDuration(ItemStack cachedStack, ItemStack selectedStack) {
+        return selectedStack.isEmpty()
+                ? DJItemCooldownManager.getSwitchWarmup(cachedStack)
+                : DJItemCooldownManager.getSwitchWarmup(selectedStack);
     }
 
     @Unique
@@ -109,9 +123,13 @@ public class ItemInHandRendererMixin {
             opcode = Opcodes.PUTFIELD))
     private void djcraft$delayMainHandItemHandoff(ItemInHandRenderer renderer, ItemStack nextStack) {
         var session = DJModeManagerClient.getInstance().getActiveSession().orElse(null);
-        if (session != null && DJAnimationRuntime.getInstance().shouldHoldOutgoing(
-                InteractionHand.MAIN_HAND, mainHandItem, nextStack, session)) {
-            return;
+        if (session != null) {
+            DJAnimationRuntime runtime = DJAnimationRuntime.getInstance();
+            if (runtime.shouldHoldHandSwap(InteractionHand.MAIN_HAND, mainHandItem, nextStack)
+                    || runtime.shouldHoldOutgoing(
+                            InteractionHand.MAIN_HAND, mainHandItem, nextStack, session)) {
+                return;
+            }
         }
         mainHandItem = nextStack;
         if (session != null) {
@@ -125,9 +143,13 @@ public class ItemInHandRendererMixin {
             opcode = Opcodes.PUTFIELD))
     private void djcraft$delayOffHandItemHandoff(ItemInHandRenderer renderer, ItemStack nextStack) {
         var session = DJModeManagerClient.getInstance().getActiveSession().orElse(null);
-        if (session != null && DJAnimationRuntime.getInstance().shouldHoldOutgoing(
-                InteractionHand.OFF_HAND, offHandItem, nextStack, session)) {
-            return;
+        if (session != null) {
+            DJAnimationRuntime runtime = DJAnimationRuntime.getInstance();
+            if (runtime.shouldHoldHandSwap(InteractionHand.OFF_HAND, offHandItem, nextStack)
+                    || runtime.shouldHoldOutgoing(
+                            InteractionHand.OFF_HAND, offHandItem, nextStack, session)) {
+                return;
+            }
         }
         offHandItem = nextStack;
         if (session != null) {
@@ -145,12 +167,22 @@ public class ItemInHandRendererMixin {
         }
         DJAnimationRuntime runtime = DJAnimationRuntime.getInstance();
         ItemStack selectedMainStack = player.getMainHandItem();
+        ItemStack selectedOffStack = player.getOffhandItem();
+        if (runtime.shouldCommitHandSwap(
+                mainHandItem, offHandItem, selectedMainStack, selectedOffStack, session)) {
+            mainHandItem = selectedMainStack;
+            offHandItem = selectedOffStack;
+            runtime.onHandSwapCachedItemsAssigned(selectedMainStack, selectedOffStack, session);
+            return;
+        }
+        if (runtime.hasActiveHandSwap()) {
+            return;
+        }
         if (runtime.shouldCommitHandoff(
                 InteractionHand.MAIN_HAND, mainHandItem, selectedMainStack, session)) {
             mainHandItem = selectedMainStack;
             runtime.onCachedItemAssigned(InteractionHand.MAIN_HAND, selectedMainStack, session);
         }
-        ItemStack selectedOffStack = player.getOffhandItem();
         if (runtime.shouldCommitHandoff(
                 InteractionHand.OFF_HAND, offHandItem, selectedOffStack, session)) {
             offHandItem = selectedOffStack;

@@ -99,34 +99,43 @@ public class DJClientEvents {
         ItemStack currentStack = player.getMainHandItem();
         Item currentItem = currentStack.isEmpty() ? null : currentStack.getItem();
         ItemStack outgoingStack = lastMainHandStack;
+        ItemStack offhandStack = player.getOffhandItem();
+        Item offhandItem = offhandStack.isEmpty() ? null : offhandStack.getItem();
+        boolean handSwap = DJAnimationSwitchRules.isHandSwap(
+                lastMainHandStack, lastOffHandStack, currentStack, offhandStack);
 
         if (currentItem != null && currentItem != lastMainHandItem) {
             // 如果新出现在主手的物品就是上一帧的副手物品（F键换手场景），
             // 说明是从副手换过来的，按冷却节拍处理而非前摇节拍。
-            if (currentItem == lastOffHandItem) {
-                applyHandSwapCooldown(player, outgoingStack, currentStack, InteractionHand.MAIN_HAND, session);
+            if (handSwap || currentItem == lastOffHandItem) {
+                applyHandSwapCooldown(player, outgoingStack, currentStack,
+                        InteractionHand.MAIN_HAND, session, !handSwap);
             } else {
                 applySwitchWarmup(player, outgoingStack, currentStack, InteractionHand.MAIN_HAND, session);
             }
         } else if (currentItem == null && lastMainHandItem != null
                 && !DJAnimationSwitchRules.isInstantRemoval(player, outgoingStack, currentStack)) {
-            applySwitchOut(outgoingStack, InteractionHand.MAIN_HAND, session);
+            if (!handSwap) {
+                applySwitchOut(outgoingStack, InteractionHand.MAIN_HAND, session);
+            }
         }
 
         lastMainHandItem = currentItem;
         lastMainHandStack = currentStack.copy();
 
         // ── 副手：检测物品变化，施加冷却节拍（不是前摇节拍） ──
-        ItemStack offhandStack = player.getOffhandItem();
-        Item offhandItem = offhandStack.isEmpty() ? null : offhandStack.getItem();
-
         if (offhandItem != lastOffHandItem) {
             if (offhandItem == null) {
-                if (!DJAnimationSwitchRules.isInstantRemoval(player, lastOffHandStack, offhandStack)) {
+                if (!handSwap
+                        && !DJAnimationSwitchRules.isInstantRemoval(player, lastOffHandStack, offhandStack)) {
                     applySwitchOut(lastOffHandStack, InteractionHand.OFF_HAND, session);
                 }
             } else {
-                applySwitchWarmup(player, lastOffHandStack, offhandStack, InteractionHand.OFF_HAND, session);
+                if (handSwap) {
+                    applySwitchWarmupCooldown(player, offhandStack, session);
+                } else {
+                    applySwitchWarmup(player, lastOffHandStack, offhandStack, InteractionHand.OFF_HAND, session);
+                }
             }
         }
         if (offhandItem != null && offhandItem != lastOffHandItem) {
@@ -142,10 +151,10 @@ public class DJClientEvents {
     // ─────────────────────────────────────────────────────────
 
     private static void applyHandSwapCooldown(Player player, ItemStack outgoingStack, ItemStack incomingStack,
-            InteractionHand hand, DJSessionClient session) {
+            InteractionHand hand, DJSessionClient session, boolean animate) {
         int beats = DJItemCooldownManager.getBeatCooldown(incomingStack);
         int warmupBeats = DJItemCooldownManager.getSwitchWarmup(incomingStack);
-        if (warmupBeats > 0) {
+        if (animate && warmupBeats > 0) {
             DJAnimationRuntime.getInstance().scheduleSwitch(
                     hand, outgoingStack, incomingStack, session, warmupBeats);
         }
@@ -169,6 +178,15 @@ public class DJClientEvents {
         double actualWarmupBeats = Math.max(0, warmupBeats - 0.4);
 
         DJClientItemCooldowns.applyIfLonger(player, incomingStack, session, actualWarmupBeats);
+    }
+
+    private static void applySwitchWarmupCooldown(Player player, ItemStack incomingStack,
+            DJSessionClient session) {
+        int warmupBeats = DJItemCooldownManager.getSwitchWarmup(incomingStack);
+        if (warmupBeats > 0) {
+            double actualWarmupBeats = Math.max(0, warmupBeats - 0.4);
+            DJClientItemCooldowns.applyIfLonger(player, incomingStack, session, actualWarmupBeats);
+        }
     }
 
     private static void applySwitchOut(ItemStack outgoingStack, InteractionHand hand, DJSessionClient session) {

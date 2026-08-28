@@ -23,6 +23,7 @@ public final class FloweryDashController {
     public static final int EFFECT_DURATION_TICKS = 20;
     private static final double CONTACT_INFLATION = 0.35;
     private static final Map<UUID, ActiveDash> ACTIVE_DASHES = new HashMap<>();
+    private static final FloweryDashCleanupQueue CLEANUP_QUEUE = new FloweryDashCleanupQueue();
 
     private FloweryDashController() {
     }
@@ -38,51 +39,57 @@ public final class FloweryDashController {
     }
 
     public static void tick(MinecraftServer server) {
-        Iterator<Map.Entry<UUID, ActiveDash>> iterator = ACTIVE_DASHES.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<UUID, ActiveDash> entry = iterator.next();
-            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-            ActiveDash dash = entry.getValue();
-            if (player == null || !player.isAlive() || player.level().getGameTime() >= dash.expiresAtTick()) {
-                iterator.remove();
-                continue;
-            }
+        CLEANUP_QUEUE.beginTick();
+        try {
+            Iterator<Map.Entry<UUID, ActiveDash>> iterator = ACTIVE_DASHES.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<UUID, ActiveDash> entry = iterator.next();
+                ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+                ActiveDash dash = entry.getValue();
+                if (player == null || !player.isAlive() || player.level().getGameTime() >= dash.expiresAtTick()) {
+                    iterator.remove();
+                    continue;
+                }
 
-            Vec3 currentPosition = player.position();
-            Vec3 traveled = currentPosition.subtract(dash.lastPosition());
-            AABB contactBox = player.getBoundingBox().move(traveled.scale(-1.0))
-                    .expandTowards(traveled).inflate(CONTACT_INFLATION);
-            LivingEntity target = player.level().getEntitiesOfClass(LivingEntity.class, contactBox,
-                            entity -> entity != player && entity.isAlive() && !player.isAlliedTo(entity))
-                    .stream()
-                    .min(java.util.Comparator.comparingDouble(player::distanceToSqr))
-                    .orElse(null);
+                Vec3 currentPosition = player.position();
+                Vec3 traveled = currentPosition.subtract(dash.lastPosition());
+                AABB contactBox = player.getBoundingBox().move(traveled.scale(-1.0))
+                        .expandTowards(traveled).inflate(CONTACT_INFLATION);
+                LivingEntity target = player.level().getEntitiesOfClass(LivingEntity.class, contactBox,
+                                entity -> entity != player && entity.isAlive() && !player.isAlliedTo(entity))
+                        .stream()
+                        .min(java.util.Comparator.comparingDouble(player::distanceToSqr))
+                        .orElse(null);
 
-            if (target != null && DJCombatHandler.hurtFromMovementAbility(player, target, CONTACT_DAMAGE)) {
-                DJModeManager.getInstance().getSession(player)
-                        .filter(session -> session.isPlaying() && session.getSessionId() == dash.sessionId())
-                        .ifPresent(session -> session.confirmComboHit(dash.actionSequence()));
-                Vec3 remainingMomentum = player.getDeltaMovement();
-                Vec3 reboundMomentum = remainingMomentum.scale(-REBOUND_MOMENTUM_MULTIPLIER);
-                DJDashMomentumController.cancel(player.getUUID());
-                player.setDeltaMovement(reboundMomentum);
-                player.hasImpulse = true;
-                player.hurtMarked = true;
-                PacketDistributor.sendToPlayer(player,
-                        new DJDashMomentumPayload(reboundMomentum, 0));
-                iterator.remove();
-            } else {
-                entry.setValue(new ActiveDash(dash.expiresAtTick(), currentPosition,
-                        dash.sessionId(), dash.actionSequence()));
+                if (target != null && DJCombatHandler.hurtFromMovementAbility(player, target, CONTACT_DAMAGE)) {
+                    DJModeManager.getInstance().getSession(player)
+                            .filter(session -> session.isPlaying() && session.getSessionId() == dash.sessionId())
+                            .ifPresent(session -> session.confirmComboHit(dash.actionSequence()));
+                    Vec3 remainingMomentum = player.getDeltaMovement();
+                    Vec3 reboundMomentum = remainingMomentum.scale(-REBOUND_MOMENTUM_MULTIPLIER);
+                    DJDashMomentumController.cancel(player.getUUID());
+                    player.setDeltaMovement(reboundMomentum);
+                    player.hasImpulse = true;
+                    player.hurtMarked = true;
+                    PacketDistributor.sendToPlayer(player,
+                            new DJDashMomentumPayload(reboundMomentum, 0));
+                    iterator.remove();
+                } else {
+                    entry.setValue(new ActiveDash(dash.expiresAtTick(), currentPosition,
+                            dash.sessionId(), dash.actionSequence()));
+                }
             }
+        } finally {
+            CLEANUP_QUEUE.endTick(ACTIVE_DASHES);
         }
     }
 
     public static void cleanupPlayer(UUID playerId) {
-        ACTIVE_DASHES.remove(playerId);
+        CLEANUP_QUEUE.remove(playerId, ACTIVE_DASHES);
     }
 
     public static void clear() {
+        CLEANUP_QUEUE.clear();
         ACTIVE_DASHES.clear();
     }
 

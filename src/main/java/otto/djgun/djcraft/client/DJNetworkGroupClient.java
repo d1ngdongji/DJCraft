@@ -91,7 +91,7 @@ public final class DJNetworkGroupClient {
         TrackPackManager manager = TrackPackManager.getInstance();
         List<String> downloads = new ArrayList<>();
         for (var requirement : payload.tracks()) {
-            if (requirement.contentHash().equals(manager.getContentHash(requirement.trackId()).orElse(null))) {
+            if (matchesRequirement(requirement, manager)) {
                 continue;
             }
             if (!requirement.downloadable()) {
@@ -114,13 +114,21 @@ public final class DJNetworkGroupClient {
     private void verifyAndReport(DJGroupPreparePayload payload) {
         TrackPackManager manager = TrackPackManager.getInstance();
         for (var requirement : payload.tracks()) {
-            if (!requirement.contentHash().equals(manager.getContentHash(requirement.trackId()).orElse(null))) {
+            if (!matchesRequirement(requirement, manager)) {
                 PacketDistributor.sendToServer(new DJGroupReadyPayload(payload.groupId(), false,
                         requirement.trackId() + ": hash mismatch"));
                 return;
             }
         }
         PacketDistributor.sendToServer(new DJGroupReadyPayload(payload.groupId(), true, ""));
+    }
+
+    private static boolean matchesRequirement(DJGroupPreparePayload.TrackRequirement requirement,
+            TrackPackManager manager) {
+        return ClientTrackRegistry.getInstance().isVerified(
+                requirement.trackId(), requirement.contentHash())
+                || requirement.contentHash().equals(
+                        manager.getContentHash(requirement.trackId()).orElse(null));
     }
 
     public void onGroupTrackStarted(PlayTrackPayload payload) {

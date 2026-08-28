@@ -233,6 +233,10 @@ public final class DJFirstPersonAnimator {
         }
     }
 
+    void clearTransitions(DJAnimationHand hand) {
+        hands.get(hand).transitions.clear();
+    }
+
     private static DJAnimationPose sampleIdle(HandAnimationState state, Object renderedIdentity,
             String itemIdentity, DJAnimationClock.ClockSnapshot clock) {
         if (state.idleIdentity != renderedIdentity || !itemIdentity.equals(state.idleItemIdentity)) {

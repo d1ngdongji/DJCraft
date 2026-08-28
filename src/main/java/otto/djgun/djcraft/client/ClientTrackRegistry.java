@@ -91,6 +91,12 @@ public class ClientTrackRegistry {
         return verifiedPackIds.contains(packId);
     }
 
+    /** Checks that verification belongs to the exact server hash required by a later workflow. */
+    public boolean isVerified(String packId, String expectedHash) {
+        return expectedHash != null && expectedHash.equals(serverHashes.get(packId))
+                && verifiedPackIds.contains(packId);
+    }
+
     /**
      * 获取所有已验证的曲目包ID
      */

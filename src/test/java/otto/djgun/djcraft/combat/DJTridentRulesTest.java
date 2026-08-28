@@ -84,6 +84,14 @@ class DJTridentRulesTest {
     }
 
     @Test
+    void loyaltyTridentWaitsOnlyForAnOnlineDeadOwner() {
+        assertTrue(DJTridentRules.shouldWaitForOwnerRespawn(1, true, false));
+        assertFalse(DJTridentRules.shouldWaitForOwnerRespawn(0, true, false));
+        assertFalse(DJTridentRules.shouldWaitForOwnerRespawn(1, true, true));
+        assertFalse(DJTridentRules.shouldWaitForOwnerRespawn(1, false, false));
+    }
+
+    @Test
     void radialMeleeKnockbackIncludesVerticalDirectionAndResistance() {
         Vec3 launched = DJTridentRules.radialKnockbackVelocity(
                 Vec3.ZERO, Vec3.ZERO, new Vec3(0.0, 4.0, 0.0),

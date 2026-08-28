@@ -22,6 +22,7 @@ public final class DJAnimationRuntime {
     private final EnumMap<DJAnimationHand, Item> renderedItems = new EnumMap<>(DJAnimationHand.class);
     private final EnumMap<DJAnimationHand, PendingRenderPose> pendingRenderPoses =
             new EnumMap<>(DJAnimationHand.class);
+    private DJHandSwapTransaction<ItemStack> handSwapTransaction;
     private long sequence;
     private long sequenceGeneration;
     private DJAnimationEvent lastEvent;
@@ -152,6 +153,110 @@ public final class DJAnimationRuntime {
         switchWindows.put(animationHand, new SwitchWindow(snapshot.timelineGeneration(),
                 itemOrNull(effectiveOutgoingStack), itemOrNull(incomingStack), startBeat, handoffBeat, endBeat,
                 unequipEvent, equipEvent, false));
+    }
+
+    /**
+     * Starts or maintains an atomic renderer-cache transaction for an F-key hand swap.
+     * Ordinary one-hand switches continue to use {@link #scheduleSwitch}.
+     */
+    public boolean updateHandSwap(ItemStack cachedMain, ItemStack cachedOff,
+            ItemStack selectedMain, ItemStack selectedOff, DJSessionClient session,
+            double mainDurationBeats, double offDurationBeats) {
+        if (cachedMain == null || cachedOff == null || selectedMain == null || selectedOff == null) {
+            return false;
+        }
+
+        DJAnimationClock.ClockSnapshot snapshot = clock.sample(session);
+        lastSnapshot = snapshot;
+        if (handSwapTransaction != null) {
+            if (handSwapTransaction.generation() == snapshot.timelineGeneration()
+                    && handSwapTransaction.isTargetPair(selectedMain, selectedOff, ItemStack::matches)) {
+                return true;
+            }
+            cancelHandSwapTransaction();
+        }
+
+        if (!DJAnimationSwitchRules.isHandSwap(cachedMain, cachedOff, selectedMain, selectedOff)) {
+            return false;
+        }
+
+        double sharedDuration = Math.max(mainDurationBeats, offDurationBeats);
+        if (!Double.isFinite(sharedDuration) || sharedDuration <= 0.0) {
+            return false;
+        }
+
+        double startBeat = snapshot.virtualBeat();
+        double handoffBeat = startBeat + sharedDuration * 0.5;
+        observeRenderedStack(InteractionHand.MAIN_HAND, cachedMain);
+        observeRenderedStack(InteractionHand.OFF_HAND, cachedOff);
+        scheduleHandSwapSide(InteractionHand.MAIN_HAND, cachedMain, selectedMain,
+                snapshot, startBeat, handoffBeat, sharedDuration);
+        scheduleHandSwapSide(InteractionHand.OFF_HAND, cachedOff, selectedOff,
+                snapshot, startBeat, handoffBeat, sharedDuration);
+        handSwapTransaction = new DJHandSwapTransaction<>(snapshot.timelineGeneration(),
+                cachedMain.copy(), cachedOff.copy(), selectedMain.copy(), selectedOff.copy(), handoffBeat);
+        return true;
+    }
+
+    private void scheduleHandSwapSide(InteractionHand hand, ItemStack outgoingStack, ItemStack incomingStack,
+            DJAnimationClock.ClockSnapshot snapshot, double startBeat, double handoffBeat,
+            double totalDurationBeats) {
+        DJAnimationEvent unequipEvent = outgoingStack.isEmpty()
+                ? null
+                : emitAt(DJAnimationSemantic.UNEQUIP_START, hand, outgoingStack, snapshot,
+                        startBeat, totalDurationBeats, DJActionOutcome.NOT_JUDGED);
+        double equipDuration = totalDurationBeats * 0.5;
+        DJAnimationEvent equipEvent = incomingStack.isEmpty()
+                ? null
+                : emitAt(DJAnimationSemantic.EQUIP_START, hand, incomingStack, snapshot,
+                        handoffBeat, equipDuration, DJActionOutcome.NOT_JUDGED);
+        switchWindows.put(toAnimationHand(hand), new SwitchWindow(snapshot.timelineGeneration(),
+                itemOrNull(outgoingStack), itemOrNull(incomingStack), startBeat, handoffBeat,
+                handoffBeat + equipDuration, unequipEvent, equipEvent, false));
+    }
+
+    public boolean shouldHoldHandSwap(InteractionHand hand, ItemStack cachedStack, ItemStack nextStack) {
+        if (handSwapTransaction == null || hand == null || cachedStack == null || nextStack == null) {
+            return false;
+        }
+        DJHandSwapTransaction.Side side = hand == InteractionHand.MAIN_HAND
+                ? DJHandSwapTransaction.Side.MAIN
+                : DJHandSwapTransaction.Side.OFF;
+        return handSwapTransaction.shouldHold(side, cachedStack, nextStack, ItemStack::matches);
+    }
+
+    public boolean shouldCommitHandSwap(ItemStack cachedMain, ItemStack cachedOff,
+            ItemStack selectedMain, ItemStack selectedOff, DJSessionClient session) {
+        if (handSwapTransaction == null || cachedMain == null || cachedOff == null
+                || selectedMain == null || selectedOff == null) {
+            return false;
+        }
+        DJAnimationClock.ClockSnapshot snapshot = clock.sample(session);
+        lastSnapshot = snapshot;
+        return handSwapTransaction.isSourcePair(cachedMain, cachedOff, ItemStack::matches)
+                && handSwapTransaction.isTargetPair(selectedMain, selectedOff, ItemStack::matches)
+                && handSwapTransaction.isReady(snapshot.timelineGeneration(), snapshot.virtualBeat());
+    }
+
+    public boolean hasActiveHandSwap() {
+        return handSwapTransaction != null;
+    }
+
+    public void onHandSwapCachedItemsAssigned(ItemStack assignedMain, ItemStack assignedOff,
+            DJSessionClient session) {
+        handSwapTransaction = null;
+        onCachedItemAssigned(InteractionHand.MAIN_HAND, assignedMain, session);
+        onCachedItemAssigned(InteractionHand.OFF_HAND, assignedOff, session);
+    }
+
+    private void cancelHandSwapTransaction() {
+        handSwapTransaction = null;
+        switchWindows.remove(DJAnimationHand.MAIN);
+        switchWindows.remove(DJAnimationHand.OFF);
+        pendingRenderPoses.remove(DJAnimationHand.MAIN);
+        pendingRenderPoses.remove(DJAnimationHand.OFF);
+        animator.clearTransitions(DJAnimationHand.MAIN);
+        animator.clearTransitions(DJAnimationHand.OFF);
     }
 
     public void cancel(InteractionHand hand, DJSessionClient session) {
@@ -323,6 +428,7 @@ public final class DJAnimationRuntime {
         switchWindows.clear();
         renderedItems.clear();
         pendingRenderPoses.clear();
+        handSwapTransaction = null;
     }
 
     /** Clears visual-only playback state after an atomic animation resource snapshot swap. */
@@ -331,6 +437,7 @@ public final class DJAnimationRuntime {
         switchWindows.clear();
         renderedItems.clear();
         pendingRenderPoses.clear();
+        handSwapTransaction = null;
     }
 
     private DJAnimationEvent emitAt(DJAnimationSemantic semantic, InteractionHand hand, ItemStack stack,
